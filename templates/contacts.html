@@ -1,0 +1,859 @@
+{% extends "base.html" %}
+
+{% block title %}Contacts - Contact Manager{% endblock %}
+{% block page_title %}All Contacts{% endblock %}
+
+{% block page_actions %}
+<div class="btn-group me-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectAll()">Select All</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">Deselect All</button>
+</div>
+<button type="button" class="btn btn-sm btn-outline-success me-2" onclick="bulkEmail()" id="bulkEmailBtn" style="display: none;">
+    <i class="fas fa-envelope me-1"></i> Email Selected
+</button>
+<button type="button" class="btn btn-sm btn-outline-warning me-2" onclick="bulkUpdateCategories()" id="bulkCategoryBtn" style="display: none;">
+    <i class="fas fa-tags me-1"></i> Update Categories
+</button>
+<button type="button" class="btn btn-sm btn-outline-info me-2" onclick="bulkUpdateStatus()" id="bulkStatusBtn" style="display: none;">
+    <i class="fas fa-star me-1"></i> Update Status
+</button>
+<button type="button" class="btn btn-sm btn-outline-primary" onclick="exportSelected()">
+    <i class="fas fa-download me-1"></i> Export Selected
+</button>
+{% endblock %}
+
+{% block content %}
+<!-- Filters and Search -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control search-box" id="searchInput" 
+                   placeholder="Search contacts..." value="{{ search_query }}"
+                   onkeyup="filterContacts()">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="d-flex gap-2">
+            <select class="form-select" id="categoryFilter" onchange="filterContacts()">
+                <option value="all">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category }}" {% if category == category_filter %}selected{% endif %}>
+                        {{ category }}
+                    </option>
+                {% endfor %}
+            </select>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="importantFilter" 
+                       {% if important_only %}checked{% endif %} onchange="filterContacts()">
+                <label class="form-check-label" for="importantFilter">
+                    Important Only
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="archivedFilter" 
+                       {% if show_archived %}checked{% endif %} onchange="filterContacts()">
+                <label class="form-check-label" for="archivedFilter">
+                    Show Archived
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contacts Grid -->
+<div class="row" id="contactsGrid">
+    {% for contact in contacts %}
+    <div class="col-lg-4 col-md-6 mb-4 contact-item" 
+         data-name="{{ contact.name.lower() }}" 
+         data-category="{{ contact.category }}"
+         data-important="{{ 'true' if contact.important else 'false' }}"
+         data-archived="{{ 'true' if contact.archived else 'false' }}">
+        <div class="card contact-card h-100 {% if contact.important %}important-contact{% endif %} {% if contact.archived %}archived-contact{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input contact-checkbox" type="checkbox" 
+                               value="{{ contact.id }}" id="contact{{ contact.id }}">
+                        <label class="form-check-label" for="contact{{ contact.id }}"></label>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ url_for('contact_detail', contact_id=contact.id) }}">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="editContact({{ contact.id }})">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="toggleImportant({{ contact.id }})">
+                                <i class="fas fa-star me-2"></i>
+                                {% if contact.important %}Remove from Important{% else %}Mark as Important{% endif %}
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="toggleArchived({{ contact.id }})">
+                                <i class="fas fa-archive me-2"></i>
+                                {% if contact.archived %}Unarchive{% else %}Archive{% endif %}
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteContact({{ contact.id }})">
+                                <i class="fas fa-trash me-2"></i>Delete
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h5 class="card-title mb-2">{{ contact.name }}</h5>
+                
+                {% if contact.organization %}
+                    <p class="card-text text-muted small mb-2">{{ contact.organization }}</p>
+                {% endif %}
+                
+                {% if contact.phone_numbers %}
+                    <div class="mb-2">
+                        {% for phone in contact.phone_numbers[:2] %}
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                <a href="tel:{{ phone.number }}" class="phone-number text-decoration-none">
+                                    {{ phone.display }}
+                                </a>
+                                <a href="sms:{{ phone.number }}" class="btn btn-sm btn-outline-primary ms-2">
+                                    <i class="fas fa-sms"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                        {% if contact.phone_numbers|length > 2 %}
+                            <small class="text-muted">+{{ contact.phone_numbers|length - 2 }} more</small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                {% if contact.emails %}
+                    <div class="mb-2">
+                        {% for email in contact.emails[:2] %}
+                            <div class="d-flex align-items-center mb-1">
+                                <i class="fas fa-envelope text-success me-2"></i>
+                                <a href="mailto:{{ email }}" class="email-link text-decoration-none">
+                                    {{ email }}
+                                </a>
+                            </div>
+                        {% endfor %}
+                        {% if contact.emails|length > 2 %}
+                            <small class="text-muted">+{{ contact.emails|length - 2 }} more</small>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <span class="badge bg-secondary category-badge">{{ contact.category }}</span>
+                    <div>
+                        {% if contact.important %}
+                            <i class="fas fa-star text-warning" title="Important"></i>
+                        {% endif %}
+                        {% if contact.archived %}
+                            <i class="fas fa-archive text-muted" title="Archived"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- No Results Message -->
+<div id="noResults" class="text-center py-5" style="display: none;">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted">No contacts found</h4>
+    <p class="text-muted">Try adjusting your search criteria or filters</p>
+</div>
+
+<!-- Contact Count -->
+<div class="mt-4">
+    <small class="text-muted">
+        Showing <span id="contactCount">{{ contacts|length }}</span> of {{ contacts|length }} contacts
+    </small>
+</div>
+
+<!-- Bulk Status Update Modal -->
+<div class="modal fade" id="bulkStatusModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Update Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Selected Contacts (<span id="statusUpdateCount">0</span>)</label>
+                    <div id="statusUpdateList" class="border rounded p-2 bg-light" style="max-height: 150px; overflow-y: auto;">
+                        <small class="text-muted">No contacts selected</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Status Actions</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="markImportant">
+                        <label class="form-check-label" for="markImportant">
+                            Mark as Important
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="markArchived">
+                        <label class="form-check-label" for="markArchived">
+                            Archive Contacts
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> You can select both options to mark contacts as important and archived.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" onclick="saveBulkStatusUpdate()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Category Update Modal -->
+<div class="modal fade" id="bulkCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Update Categories</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Selected Contacts (<span id="categoryUpdateCount">0</span>)</label>
+                    <div id="categoryUpdateList" class="border rounded p-2 bg-light" style="max-height: 150px; overflow-y: auto;">
+                        <small class="text-muted">No contacts selected</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="newCategory" class="form-label">New Category *</label>
+                    <select class="form-select" id="newCategory" required>
+                        <option value="">Select a category...</option>
+                    </select>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This will update the category for all selected contacts. 
+                    This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="saveBulkCategoryUpdate()">Update Categories</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Email Modal -->
+<div class="modal fade" id="bulkEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Bulk Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Selected Recipients (<span id="recipientCount">0</span>)</label>
+                    <div id="recipientList" class="border rounded p-2 bg-light" style="max-height: 150px; overflow-y: auto;">
+                        <small class="text-muted">No recipients selected</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="emailSubject" class="form-label">Subject *</label>
+                    <input type="text" class="form-control" id="emailSubject" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="emailBody" class="form-label">Message *</label>
+                    <textarea class="form-control" id="emailBody" rows="8" required 
+                              placeholder="Enter your message here..."></textarea>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Note:</strong> This will open your default email client with the selected recipients. 
+                    Make sure your email client is properly configured.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendBulkEmail()">Send Email</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allContacts = {{ contacts|tojson }};
+
+function filterContacts() {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const importantFilter = document.getElementById('importantFilter').checked;
+    const archivedFilter = document.getElementById('archivedFilter').checked;
+    
+    const contactItems = document.querySelectorAll('.contact-item');
+    let visibleCount = 0;
+    
+    contactItems.forEach(item => {
+        const name = item.dataset.name;
+        const category = item.dataset.category;
+        const important = item.dataset.important === 'true';
+        const archived = item.dataset.archived === 'true';
+        
+        let show = true;
+        
+        // Search filter
+        if (searchQuery && !name.includes(searchQuery)) {
+            show = false;
+        }
+        
+        // Category filter
+        if (categoryFilter !== 'all' && category !== categoryFilter) {
+            show = false;
+        }
+        
+        // Important filter
+        if (importantFilter && !important) {
+            show = false;
+        }
+        
+        // Archived filter
+        if (!archivedFilter && archived) {
+            show = false;
+        }
+        
+        item.style.display = show ? 'block' : 'none';
+        if (show) visibleCount++;
+    });
+    
+    document.getElementById('contactCount').textContent = visibleCount;
+    document.getElementById('noResults').style.display = visibleCount === 0 ? 'block' : 'none';
+}
+
+function selectAll() {
+    document.querySelectorAll('.contact-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateBulkEmailButton();
+}
+
+function deselectAll() {
+    document.querySelectorAll('.contact-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateBulkEmailButton();
+}
+
+function exportSelected() {
+    const selectedContacts = getSelectedContacts();
+    if (selectedContacts.length === 0) {
+        alert('Please select contacts to export');
+        return;
+    }
+    
+    const url = `/export?selected=${selectedContacts.join(',')}`;
+    window.location.href = url;
+}
+
+function bulkEmail() {
+    const selectedContacts = getSelectedContacts();
+    if (selectedContacts.length === 0) {
+        alert('Please select contacts to email');
+        return;
+    }
+    
+    // Get fresh data from server to ensure we have the latest contact information
+    fetch('/api/contacts')
+        .then(response => response.json())
+        .then(contacts => {
+            // Convert selected IDs to integers for comparison
+            const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+            
+            // Get selected contacts with emails
+            const contactsWithEmails = contacts.filter(contact => 
+                selectedIdsInt.includes(contact.id) && contact.emails && contact.emails.length > 0
+            );
+            
+            if (contactsWithEmails.length === 0) {
+                alert('Selected contacts do not have email addresses');
+                return;
+            }
+            
+            // Update recipient list
+            const recipientList = document.getElementById('recipientList');
+            const recipientCount = document.getElementById('recipientCount');
+            
+            recipientCount.textContent = contactsWithEmails.length;
+            
+            let recipientHtml = '';
+            contactsWithEmails.forEach(contact => {
+                contact.emails.forEach(email => {
+                    recipientHtml += `<div class="mb-1"><i class="fas fa-envelope me-1"></i>${contact.name} (${email})</div>`;
+                });
+            });
+            
+            recipientList.innerHTML = recipientHtml;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('bulkEmailModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error loading data:', error);
+            alert('Error loading contact data. Please try again.');
+        });
+}
+
+function sendBulkEmail() {
+    const subject = document.getElementById('emailSubject').value.trim();
+    const body = document.getElementById('emailBody').value.trim();
+    
+    if (!subject || !body) {
+        alert('Please fill in both subject and message');
+        return;
+    }
+    
+    const selectedContacts = getSelectedContacts();
+    const contactsWithEmails = allContacts.filter(contact => 
+        selectedContacts.includes(contact.id) && contact.emails && contact.emails.length > 0
+    );
+    
+    // Collect all email addresses
+    const emailAddresses = [];
+    contactsWithEmails.forEach(contact => {
+        contact.emails.forEach(email => {
+            if (!emailAddresses.includes(email)) {
+                emailAddresses.push(email);
+            }
+        });
+    });
+    
+    // Create mailto link
+    const mailtoLink = `mailto:${emailAddresses.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('bulkEmailModal'));
+    modal.hide();
+    
+    // Clear form
+    document.getElementById('emailSubject').value = '';
+    document.getElementById('emailBody').value = '';
+}
+
+function bulkUpdateCategories() {
+    const selectedContacts = getSelectedContacts();
+    console.log('Selected contact IDs:', selectedContacts);
+    
+    if (selectedContacts.length === 0) {
+        alert('Please select contacts to update');
+        return;
+    }
+    
+    // Get fresh data from server to ensure we have the latest contact information
+    fetch('/api/contacts')
+        .then(response => response.json())
+        .then(contacts => {
+            console.log('Available contacts:', contacts.map(c => ({ id: c.id, name: c.name })));
+            console.log('Looking for IDs:', selectedContacts);
+            
+            // Convert selected IDs to integers for comparison
+            const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+            console.log('Selected IDs as integers:', selectedIdsInt);
+            
+            let contactsToUpdate = contacts.filter(contact => 
+                selectedIdsInt.includes(contact.id)
+            );
+            
+            console.log('Found contacts to update:', contactsToUpdate);
+            
+            if (contactsToUpdate.length === 0) {
+                alert('No valid contacts found to update. Selected: ' + selectedContacts.join(', '));
+                return;
+            }
+            
+            // Update contact list
+            const categoryUpdateList = document.getElementById('categoryUpdateList');
+            const categoryUpdateCount = document.getElementById('categoryUpdateCount');
+            
+            categoryUpdateCount.textContent = contactsToUpdate.length;
+            
+            let contactHtml = '';
+            contactsToUpdate.forEach(contact => {
+                contactHtml += `<div class="mb-1"><i class="fas fa-user me-1"></i>${contact.name} (${contact.category})</div>`;
+            });
+            
+            categoryUpdateList.innerHTML = contactHtml;
+            
+            // Load categories into dropdown
+            const categorySelect = document.getElementById('newCategory');
+            categorySelect.innerHTML = '<option value="">Select a category...</option>';
+            
+            return fetch('/api/categories');
+        })
+        .then(response => response.json())
+        .then(categories => {
+            const categorySelect = document.getElementById('newCategory');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('bulkCategoryModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error loading data:', error);
+            alert('Error loading contact data. Please try again.');
+        });
+}
+
+function saveBulkCategoryUpdate() {
+    const newCategory = document.getElementById('newCategory').value.trim();
+    if (!newCategory) {
+        alert('Please select a category');
+        return;
+    }
+    
+    const selectedContacts = getSelectedContacts();
+    if (selectedContacts.length === 0) {
+        alert('No contacts selected');
+        return;
+    }
+    
+    // Get fresh data from server
+    fetch('/api/contacts')
+        .then(response => response.json())
+        .then(contacts => {
+            // Convert selected IDs to integers for comparison
+            const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+            
+            const contactsToUpdate = contacts.filter(contact => 
+                selectedIdsInt.includes(contact.id)
+            );
+            
+            if (contactsToUpdate.length === 0) {
+                alert('No valid contacts found to update');
+                return;
+            }
+            
+            // Use bulk update endpoint
+            const bulkUpdateData = {
+                contact_ids: contactsToUpdate.map(contact => contact.id),
+                updates: { category: newCategory }
+            };
+            
+            fetch('/api/contacts/bulk', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bulkUpdateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.updated_count > 0) {
+                    alert(`Successfully updated ${data.updated_count} contacts to category: ${newCategory}`);
+                    location.reload();
+                } else {
+                    alert('No contacts were updated. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating contacts:', error);
+                alert('Error updating contacts. Please try again.');
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching contacts:', error);
+            alert('Error fetching contacts. Please try again.');
+        });
+}
+
+function bulkUpdateStatus() {
+    const selectedContacts = getSelectedContacts();
+    if (selectedContacts.length === 0) {
+        alert('Please select contacts to update');
+        return;
+    }
+    
+    // Get fresh data from server to ensure we have the latest contact information
+    fetch('/api/contacts')
+        .then(response => response.json())
+        .then(contacts => {
+            // Convert selected IDs to integers for comparison
+            const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+            
+            const contactsToUpdate = contacts.filter(contact => 
+                selectedIdsInt.includes(contact.id)
+            );
+            
+            if (contactsToUpdate.length === 0) {
+                alert('No valid contacts found to update');
+                return;
+            }
+            
+            // Update contact list
+            const statusUpdateList = document.getElementById('statusUpdateList');
+            const statusUpdateCount = document.getElementById('statusUpdateCount');
+            
+            statusUpdateCount.textContent = contactsToUpdate.length;
+            
+            let contactHtml = '';
+            contactsToUpdate.forEach(contact => {
+                const status = [];
+                if (contact.important) status.push('Important');
+                if (contact.archived) status.push('Archived');
+                const statusText = status.length > 0 ? ` (${status.join(', ')})` : ' (No special status)';
+                contactHtml += `<div class="mb-1"><i class="fas fa-user me-1"></i>${contact.name}${statusText}</div>`;
+            });
+            
+            statusUpdateList.innerHTML = contactHtml;
+            
+            // Reset checkboxes
+            document.getElementById('markImportant').checked = false;
+            document.getElementById('markArchived').checked = false;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('bulkStatusModal'));
+            modal.show();
+        })
+        .catch(error => {
+            console.error('Error loading data:', error);
+            alert('Error loading contact data. Please try again.');
+        });
+}
+
+function saveBulkStatusUpdate() {
+    const markImportant = document.getElementById('markImportant').checked;
+    const markArchived = document.getElementById('markArchived').checked;
+    
+    if (!markImportant && !markArchived) {
+        alert('Please select at least one status action');
+        return;
+    }
+    
+    const selectedContacts = getSelectedContacts();
+    if (selectedContacts.length === 0) {
+        alert('No contacts selected');
+        return;
+    }
+    
+    // Get fresh data from server
+    fetch('/api/contacts')
+        .then(response => response.json())
+        .then(contacts => {
+            // Convert selected IDs to integers for comparison
+            const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+            
+            const contactsToUpdate = contacts.filter(contact => 
+                selectedIdsInt.includes(contact.id)
+            );
+            
+            if (contactsToUpdate.length === 0) {
+                alert('No valid contacts found to update');
+                return;
+            }
+            
+            // Use bulk update endpoint
+            const updates = {};
+            if (markImportant) updates.important = true;
+            if (markArchived) updates.archived = true;
+            
+            const bulkUpdateData = {
+                contact_ids: contactsToUpdate.map(contact => contact.id),
+                updates: updates
+            };
+            
+            fetch('/api/contacts/bulk', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bulkUpdateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.updated_count > 0) {
+                    const actions = [];
+                    if (markImportant) actions.push('important');
+                    if (markArchived) actions.push('archived');
+                    alert(`Successfully updated ${data.updated_count} contacts: ${actions.join(', ')}`);
+                    location.reload();
+                } else {
+                    alert('No contacts were updated. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating contacts:', error);
+                alert('Error updating contacts. Please try again.');
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching contacts:', error);
+            alert('Error fetching contacts. Please try again.');
+        });
+}
+
+function editContact(contactId) {
+    // Load contact data and open edit modal
+    const contact = allContacts.find(c => c.id === contactId);
+    if (contact) {
+        // Populate edit form
+        document.getElementById('editContactId').value = contact.id;
+        document.getElementById('editContactName').value = contact.name;
+        document.getElementById('editContactFullName').value = contact.full_name || '';
+        document.getElementById('editContactOrganization').value = contact.organization || '';
+        document.getElementById('editContactTitle').value = contact.title || '';
+        document.getElementById('editContactAddress').value = contact.address || '';
+        document.getElementById('editContactNotes').value = contact.notes || '';
+        document.getElementById('editContactCategory').value = contact.category;
+        document.getElementById('editContactImportant').checked = contact.important;
+        document.getElementById('editContactArchived').checked = contact.archived;
+        
+        // Open edit modal
+        const editModal = new bootstrap.Modal(document.getElementById('editContactModal'));
+        editModal.show();
+    }
+}
+
+function toggleImportant(contactId) {
+    const contact = allContacts.find(c => c.id === contactId);
+    if (contact) {
+        contact.important = !contact.important;
+        updateContact(contact);
+    }
+}
+
+function toggleArchived(contactId) {
+    const contact = allContacts.find(c => c.id === contactId);
+    if (contact) {
+        contact.archived = !contact.archived;
+        updateContact(contact);
+    }
+}
+
+function updateContact(contact) {
+    fetch('/api/contacts', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contact)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.id) {
+            location.reload();
+        } else {
+            alert('Error updating contact');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating contact');
+    });
+}
+
+function deleteContact(contactId) {
+    if (confirm('Are you sure you want to delete this contact?')) {
+        fetch(`/api/contacts?id=${contactId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.id) {
+                location.reload();
+            } else {
+                alert('Error deleting contact');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting contact');
+        });
+    }
+}
+
+// Initialize filters on page load
+document.addEventListener('DOMContentLoaded', function() {
+    filterContacts();
+    
+    // Add event listeners for checkboxes to show/hide bulk email button
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('contact-checkbox')) {
+            updateBulkEmailButton();
+        }
+    });
+});
+
+function updateBulkEmailButton() {
+    const selectedContacts = getSelectedContacts();
+    const bulkEmailBtn = document.getElementById('bulkEmailBtn');
+    const bulkCategoryBtn = document.getElementById('bulkCategoryBtn');
+    const bulkStatusBtn = document.getElementById('bulkStatusBtn');
+    
+    if (selectedContacts.length > 0) {
+        // Get fresh data to check for emails
+        fetch('/api/contacts')
+            .then(response => response.json())
+            .then(contacts => {
+                // Convert selected IDs to integers for comparison
+                const selectedIdsInt = selectedContacts.map(id => parseInt(id));
+                
+                // Check if any selected contacts have emails
+                const contactsWithEmails = contacts.filter(contact => 
+                    selectedIdsInt.includes(contact.id) && contact.emails && contact.emails.length > 0
+                );
+                
+                if (contactsWithEmails.length > 0) {
+                    bulkEmailBtn.style.display = 'inline-block';
+                } else {
+                    bulkEmailBtn.style.display = 'none';
+                }
+                
+                // Show bulk action buttons for any selected contacts
+                bulkCategoryBtn.style.display = 'inline-block';
+                bulkStatusBtn.style.display = 'inline-block';
+            })
+            .catch(error => {
+                console.error('Error checking contacts:', error);
+                // Fallback: show all buttons if we can't check emails
+                bulkEmailBtn.style.display = 'inline-block';
+                bulkCategoryBtn.style.display = 'inline-block';
+                bulkStatusBtn.style.display = 'inline-block';
+            });
+    } else {
+        bulkEmailBtn.style.display = 'none';
+        bulkCategoryBtn.style.display = 'none';
+        bulkStatusBtn.style.display = 'none';
+    }
+}
+</script>
+{% endblock %} 

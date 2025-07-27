@@ -75,3 +75,6 @@ tmp/
 # Backup files
 *.backup
 *.bak 
+
+contacts.vcf
+contacts_table.csv
