@@ -1,0 +1,42 @@
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyBPXNrOyLK63foHNgGaOpE8dS8N5ISl58s",
+    authDomain: "mom-contacts-74dc5.firebaseapp.com",
+    projectId: "mom-contacts-74dc5",
+    storageBucket: "mom-contacts-74dc5.firebasestorage.app",
+    messagingSenderId: "916136302641",
+    appId: "1:916136302641:web:caf2ba534d4c76ee755d10",
+    measurementId: "G-Q4HZSBT1Y1"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Initialize Firestore
+const db = firebase.firestore();
+
+// Initialize Auth
+const auth = firebase.auth();
+
+// Enable offline persistence
+db.enablePersistence()
+    .catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+        } else if (err.code == 'unimplemented') {
+            console.log('The current browser does not support persistence.');
+        }
+    });
+
+// Authentication state observer
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        console.log('User is signed in:', user.email);
+        // User is signed in, load the app
+        loadApp();
+    } else {
+        console.log('User is signed out');
+        // User is signed out, show login
+        showLogin();
+    }
+}); 

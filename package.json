@@ -1,0 +1,22 @@
+{
+  "name": "mom-contacts",
+  "version": "1.0.0",
+  "description": "Contact Management System for Mom",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "gh-pages -d public",
+    "start": "python3 app.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/mom-contacts.git"
+  },
+  "keywords": ["contacts", "management", "family"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.1.0"
+  },
+  "homepage": "https://yourusername.github.io/mom-contacts"
+} 
