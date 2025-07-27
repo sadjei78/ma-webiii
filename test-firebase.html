@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Connection Test</h1>
+    
+    <div id="status"></div>
+    
+    <div>
+        <button onclick="testAuth()">Test Authentication</button>
+        <button onclick="testFirestore()">Test Firestore</button>
+        <button onclick="createTestContact()">Create Test Contact</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="public/js/firebase-config.js"></script>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        // Test Firebase initialization
+        try {
+            showStatus('Testing Firebase connection...', 'info');
+            
+            // Test if Firebase is initialized
+            if (typeof firebase !== 'undefined' && firebase.app) {
+                showStatus('✅ Firebase initialized successfully!', 'success');
+                addResult('Firebase SDK loaded correctly', 'success');
+            } else {
+                showStatus('❌ Firebase not initialized', 'error');
+                return;
+            }
+            
+            // Test Firestore
+            if (firebase.firestore) {
+                addResult('Firestore SDK loaded', 'success');
+            } else {
+                addResult('❌ Firestore SDK not loaded', 'error');
+            }
+            
+            // Test Auth
+            if (firebase.auth) {
+                addResult('Authentication SDK loaded', 'success');
+            } else {
+                addResult('❌ Authentication SDK not loaded', 'error');
+            }
+            
+        } catch (error) {
+            showStatus(`❌ Error: ${error.message}`, 'error');
+        }
+        
+        function testAuth() {
+            addResult('Testing authentication...', 'info');
+            
+            const auth = firebase.auth();
+            const user = auth.currentUser;
+            
+            if (user) {
+                addResult(`✅ User logged in: ${user.email}`, 'success');
+            } else {
+                addResult('ℹ️ No user currently logged in', 'info');
+            }
+        }
+        
+        function testFirestore() {
+            addResult('Testing Firestore connection...', 'info');
+            
+            const db = firebase.firestore();
+            
+            // Try to read from a test collection
+            db.collection('test').limit(1).get()
+                .then(() => {
+                    addResult('✅ Firestore connection successful', 'success');
+                })
+                .catch((error) => {
+                    addResult(`❌ Firestore error: ${error.message}`, 'error');
+                });
+        }
+        
+        function createTestContact() {
+            addResult('Creating test contact...', 'info');
+            
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+            
+            if (!auth.currentUser) {
+                addResult('❌ Must be logged in to create contacts', 'error');
+                return;
+            }
+            
+            const testContact = {
+                name: 'Test Contact',
+                email: 'test@example.com',
+                phone: '+1234567890',
+                category: 'Test',
+                important: false,
+                archived: false,
+                created_date: new Date().toISOString(),
+                last_modified: new Date().toISOString()
+            };
+            
+            db.collection('contacts').add(testContact)
+                .then((docRef) => {
+                    addResult(`✅ Test contact created with ID: ${docRef.id}`, 'success');
+                })
+                .catch((error) => {
+                    addResult(`❌ Error creating contact: ${error.message}`, 'error');
+                });
+        }
+    </script>
+</body>
+</html> 
