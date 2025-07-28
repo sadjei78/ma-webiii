@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - Mom's Contact Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .guide-section { margin-bottom: 2rem; }
+        .feature-list { list-style: none; padding-left: 0; }
+        .feature-list li { margin-bottom: 0.5rem; }
+        .feature-list i { width: 20px; margin-right: 0.5rem; }
+        .step-list { counter-reset: step-counter; }
+        .step-list li { counter-increment: step-counter; margin-bottom: 1rem; }
+        .step-list li::before { content: counter(step-counter); background: #007bff; color: white; border-radius: 50%; width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.5rem; font-size: 0.8rem; }
+        .tip-box { background: #e7f3ff; border-left: 4px solid #007bff; padding: 1rem; margin: 1rem 0; border-radius: 0.25rem; }
+        .warning-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0; border-radius: 0.25rem; }
+        .success-box { background: #d4edda; border-left: 4px solid #28a745; padding: 1rem; margin: 1rem 0; border-radius: 0.25rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-arrow-left me-2"></i>Back to App
+            </a>
+            <span class="navbar-text">
+                <i class="fas fa-book me-2"></i>User Guide
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-book me-3"></i>Mom's Contact Manager - User Guide
+                </h1>
+                <p class="lead text-center">Welcome to your family's secure contact management system! This guide will help you navigate and use all the features effectively.</p>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-rocket me-2"></i>Getting Started</h2>
+                    
+                    <h3>First Time Setup</h3>
+                    <ol class="step-list">
+                        <li><strong>Visit the app</strong>: <code>https://sadjei78.github.io/ma-webiii</code></li>
+                        <li><strong>Sign up</strong> with your email address and a strong password</li>
+                        <li><strong>Wait for approval</strong> - an existing family member will authorize your account</li>
+                        <li><strong>Sign in</strong> once you receive confirmation</li>
+                    </ol>
+
+                    <h3>Sign In</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i>Use your email and password to access the app</li>
+                        <li><i class="fas fa-check text-success"></i>Your session will stay active until you sign out</li>
+                        <li><i class="fas fa-check text-success"></i>You can access the app from any device with internet</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-home me-2"></i>Dashboard Overview</h2>
+                    <p>The <strong>Dashboard</strong> is your home screen showing key information:</p>
+
+                    <h3>Quick Stats</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-users text-primary"></i><strong>Total Contacts</strong>: See how many contacts you have</li>
+                        <li><i class="fas fa-star text-warning"></i><strong>Important Contacts</strong>: Highlighted contacts that need attention</li>
+                        <li><i class="fas fa-clock text-info"></i><strong>Recent Activity</strong>: Recently added or updated contacts</li>
+                        <li><i class="fas fa-tags text-success"></i><strong>Categories</strong>: Breakdown of contacts by category</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <h5><i class="fas fa-lightbulb me-2"></i>Pro Tip</h5>
+                        <p><strong>Click any dashboard card</strong> to see filtered contacts! This is a quick way to view specific groups of contacts.</p>
+                    </div>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-users me-2"></i>Managing Contacts</h2>
+
+                    <h3>Adding a New Contact</h3>
+                    <ol class="step-list">
+                        <li>Click <strong>"Add New Contact"</strong> button</li>
+                        <li>Fill in the contact information:
+                            <ul>
+                                <li><strong>Name</strong> (required)</li>
+                                <li><strong>Full Name</strong> (optional)</li>
+                                <li><strong>Organization</strong> (optional)</li>
+                                <li><strong>Phone Numbers</strong> (click "+" to add multiple)</li>
+                                <li><strong>Email Addresses</strong> (click "+" to add multiple)</li>
+                                <li><strong>Categories</strong> (select from dropdown or add new)</li>
+                                <li><strong>Notes</strong> (any additional information)</li>
+                            </ul>
+                        </li>
+                        <li>Click <strong>"Save Contact"</strong></li>
+                    </ol>
+
+                    <h3>Viewing Contact Details</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-mouse-pointer text-primary"></i><strong>Click any contact card</strong> to see full details</li>
+                        <li><i class="fas fa-eye text-info"></i>View all information in a popup dialog</li>
+                        <li><i class="fas fa-edit text-warning"></i>Click <strong>"Edit"</strong> to modify the contact</li>
+                    </ul>
+
+                    <h3>Contact Status</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-star text-warning"></i><strong>Important</strong>: Mark contacts as important (yellow highlight)</li>
+                        <li><i class="fas fa-archive text-secondary"></i><strong>Archived</strong>: Hide contacts from main view (grayed out)</li>
+                        <li><i class="fas fa-check-circle text-success"></i><strong>Active</strong>: Normal contacts (green badge)</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-tags me-2"></i>Categories & Organization</h2>
+
+                    <h3>Using Categories</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i><strong>Select categories</strong> when adding/editing contacts</li>
+                        <li><i class="fas fa-layer-group text-info"></i><strong>Multiple categories</strong> can be assigned to one contact</li>
+                        <li><i class="fas fa-filter text-primary"></i><strong>Filter contacts</strong> by category using the dropdown</li>
+                    </ul>
+
+                    <h3>Managing Categories</h3>
+                    <ol class="step-list">
+                        <li>Click <strong>"Manage Categories"</strong> in the dropdown menu</li>
+                        <li><strong>Add new categories</strong> for your family's needs</li>
+                        <li><strong>Delete unused categories</strong> (contacts will be moved to "Uncategorized")</li>
+                        <li><strong>View all existing categories</strong> in the list</li>
+                    </ol>
+
+                    <h3>Default Categories</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-home text-primary"></i><strong>Family</strong>: Immediate and extended family members</li>
+                        <li><i class="fas fa-briefcase text-success"></i><strong>Work</strong>: Professional contacts and colleagues</li>
+                        <li><i class="fas fa-user-friends text-info"></i><strong>Friends</strong>: Personal friends and acquaintances</li>
+                        <li><i class="fas fa-exclamation-triangle text-warning"></i><strong>Emergency</strong>: Important emergency contacts</li>
+                        <li><i class="fas fa-graduation-cap text-secondary"></i><strong>School</strong>: Educational contacts and teachers</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-search me-2"></i>Search & Filter</h2>
+
+                    <h3>Searching Contacts</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-search text-primary"></i>Use the <strong>search box</strong> at the top of the contacts page</li>
+                        <li><i class="fas fa-keyboard text-info"></i>Search by <strong>name</strong>, <strong>organization</strong>, or <strong>phone number</strong></li>
+                        <li><i class="fas fa-sync text-success"></i>Results update as you type</li>
+                    </ul>
+
+                    <h3>Filtering Options</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-tags text-primary"></i><strong>Category Filter</strong>: Show contacts from specific categories</li>
+                        <li><i class="fas fa-star text-warning"></i><strong>Status Filter</strong>: Show Important, Archived, or All contacts</li>
+                        <li><i class="fas fa-link text-info"></i><strong>Combined Filters</strong>: Use search and category filters together</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-envelope me-2"></i>Bulk Operations</h2>
+
+                    <h3>Selecting Multiple Contacts</h3>
+                    <ol class="step-list">
+                        <li>Check the <strong>checkbox</strong> next to contact names</li>
+                        <li>Use <strong>"Select All"</strong> to choose all visible contacts</li>
+                        <li>Selected contacts show a blue highlight</li>
+                    </ol>
+
+                    <h3>Bulk Actions Available</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-envelope text-primary"></i><strong>Bulk Email</strong>: Send email to multiple contacts</li>
+                        <li><i class="fas fa-tags text-info"></i><strong>Bulk Category Update</strong>: Add categories to multiple contacts</li>
+                        <li><i class="fas fa-star text-warning"></i><strong>Bulk Status Update</strong>: Mark multiple contacts as important/archived</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-copy me-2"></i>Duplicate Management</h2>
+
+                    <h3>Finding Duplicates</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-exclamation-triangle text-warning"></i><strong>Duplicate badges</strong> appear on contacts with similar names or phone numbers</li>
+                        <li><i class="fas fa-mouse-pointer text-primary"></i>Click on a contact with a duplicate badge to see options</li>
+                    </ul>
+
+                    <h3>Merging Duplicates</h3>
+                    <ol class="step-list">
+                        <li>Click on a contact with duplicate badge</li>
+                        <li>Click <strong>"Merge Duplicates"</strong></li>
+                        <li>Select which contacts to merge</li>
+                        <li>Click <strong>"Merge Selected"</strong></li>
+                        <li>The original contact keeps all information from merged contacts</li>
+                    </ol>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-download me-2"></i>Export & Backup</h2>
+
+                    <h3>Exporting Contacts</h3>
+                    <ol class="step-list">
+                        <li>Click <strong>"Export Contacts"</strong> button</li>
+                        <li>Choose to export <strong>all contacts</strong> or <strong>selected contacts</strong></li>
+                        <li>Download as <strong>CSV file</strong></li>
+                        <li>Open in Excel, Google Sheets, or any spreadsheet app</li>
+                    </ol>
+
+                    <div class="success-box">
+                        <h5><i class="fas fa-shield-alt me-2"></i>Backup Strategy</h5>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-sync text-success"></i><strong>Automatic</strong>: Firebase backs up your data automatically</li>
+                            <li><i class="fas fa-download text-primary"></i><strong>Manual</strong>: Export contacts regularly as CSV</li>
+                            <li><i class="fas fa-mobile-alt text-info"></i><strong>Multiple Devices</strong>: Access from any device with internet</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-shield-alt me-2"></i>Security Features</h2>
+
+                    <h3>Access Control</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-lock text-success"></i><strong>Only authorized family members</strong> can access the app</li>
+                        <li><i class="fas fa-envelope text-primary"></i><strong>Email verification</strong> required for all accounts</li>
+                        <li><i class="fas fa-key text-warning"></i><strong>Secure authentication</strong> through Firebase</li>
+                    </ul>
+
+                    <h3>Data Protection</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-lock text-success"></i><strong>HTTPS encryption</strong> for all data transmission</li>
+                        <li><i class="fas fa-shield-alt text-primary"></i><strong>Firebase security rules</strong> protect your data</li>
+                        <li><i class="fas fa-ban text-danger"></i><strong>No public access</strong> to your contact information</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-exclamation-triangle me-2"></i>Troubleshooting</h2>
+
+                    <h3>Common Issues</h3>
+                    
+                    <h4>Can't sign in?</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i>Check your email and password</li>
+                        <li><i class="fas fa-check text-success"></i>Make sure you're using the correct email address</li>
+                        <li><i class="fas fa-check text-success"></i>Contact a family member if you need access</li>
+                    </ul>
+
+                    <h4>Contact not saving?</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i>Check your internet connection</li>
+                        <li><i class="fas fa-check text-success"></i>Make sure all required fields are filled</li>
+                        <li><i class="fas fa-check text-success"></i>Try refreshing the page</li>
+                    </ul>
+
+                    <h4>App not loading?</h4>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i>Clear your browser cache</li>
+                        <li><i class="fas fa-check text-success"></i>Try a different browser</li>
+                        <li><i class="fas fa-check text-success"></i>Check your internet connection</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-mobile-alt me-2"></i>Mobile Usage</h2>
+
+                    <h3>Mobile-Friendly Design</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i><strong>Responsive layout</strong> works on phones and tablets</li>
+                        <li><i class="fas fa-hand-pointer text-primary"></i><strong>Touch-friendly</strong> buttons and controls</li>
+                        <li><i class="fas fa-optimize text-info"></i><strong>Optimized</strong> for mobile browsers</li>
+                    </ul>
+
+                    <h3>Mobile Tips</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-bookmark text-primary"></i><strong>Bookmark the app</strong> for easy access</li>
+                        <li><i class="fas fa-expand-arrows-alt text-info"></i><strong>Use landscape mode</strong> for better viewing</li>
+                        <li><i class="fas fa-bell text-warning"></i><strong>Enable notifications</strong> if available</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-lightbulb me-2"></i>Pro Tips</h2>
+
+                    <h3>Efficient Contact Management</h3>
+                    <ol class="step-list">
+                        <li><strong>Use categories consistently</strong> for easy filtering</li>
+                        <li><strong>Add multiple phone numbers</strong> for important contacts</li>
+                        <li><strong>Include notes</strong> for special instructions or preferences</li>
+                        <li><strong>Mark emergency contacts</strong> as important</li>
+                        <li><strong>Regularly update</strong> contact information</li>
+                    </ol>
+
+                    <h3>Organization Strategies</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-users text-primary"></i><strong>Create family-specific categories</strong> (e.g., "Mom's Side", "Dad's Side")</li>
+                        <li><i class="fas fa-sticky-note text-info"></i><strong>Use notes</strong> for birthdays, anniversaries, or special preferences</li>
+                        <li><i class="fas fa-star text-warning"></i><strong>Mark frequently contacted people</strong> as important</li>
+                        <li><i class="fas fa-archive text-secondary"></i><strong>Archive old contacts</strong> instead of deleting them</li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h2><i class="fas fa-clipboard-list me-2"></i>Quick Reference</h2>
+
+                    <h3>Keyboard Shortcuts</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-keyboard text-primary"></i><strong>Ctrl/Cmd + F</strong>: Search contacts</li>
+                        <li><i class="fas fa-tab text-info"></i><strong>Tab</strong>: Navigate between form fields</li>
+                        <li><i class="fas fa-enter text-success"></i><strong>Enter</strong>: Submit forms</li>
+                        <li><i class="fas fa-times text-danger"></i><strong>Escape</strong>: Close modals</li>
+                    </ul>
+
+                    <h3>Common Actions</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-plus text-success"></i><strong>Add Contact</strong>: Dashboard → "Add New Contact"</li>
+                        <li><i class="fas fa-search text-primary"></i><strong>Search</strong>: Use search box on contacts page</li>
+                        <li><i class="fas fa-filter text-info"></i><strong>Filter</strong>: Use category dropdown</li>
+                        <li><i class="fas fa-download text-warning"></i><strong>Export</strong>: Dashboard → "Export Contacts"</li>
+                        <li><i class="fas fa-users-cog text-secondary"></i><strong>Manage Users</strong>: Dropdown menu → "Manage Users"</li>
+                    </ul>
+                </div>
+
+                <div class="success-box text-center">
+                    <h3><i class="fas fa-check-circle me-2"></i>You're All Set!</h3>
+                    <p class="mb-0">Your family contact management system is now ready to use. Remember to keep your password secure and contact family admin for help.</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="index.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to App
+                    </a>
+                    <a href="quick-reference.html" class="btn btn-outline-info">
+                        <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

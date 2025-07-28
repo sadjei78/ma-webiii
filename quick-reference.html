@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Reference - Mom's Contact Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .quick-section { margin-bottom: 2rem; }
+        .action-list { list-style: none; padding-left: 0; }
+        .action-list li { margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 0.25rem; background: #f8f9fa; }
+        .action-list i { width: 25px; margin-right: 0.5rem; }
+        .tip-box { background: #e7f3ff; border-left: 4px solid #007bff; padding: 1rem; margin: 1rem 0; border-radius: 0.25rem; }
+        .category-item { display: inline-block; margin: 0.25rem; padding: 0.5rem 1rem; background: #007bff; color: white; border-radius: 1rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-arrow-left me-2"></i>Back to App
+            </a>
+            <span class="navbar-text">
+                <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="text-center mb-4">
+                    <i class="fas fa-clipboard-list me-3"></i>Quick Reference Card
+                </h1>
+                <p class="lead text-center">Fast access to the most common actions and shortcuts</p>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-rocket me-2"></i>Quick Start</h2>
+                    <ol>
+                        <li>Visit: <code>https://sadjei78.github.io/ma-webiii</code></li>
+                        <li>Sign up with your email</li>
+                        <li>Wait for family approval</li>
+                        <li>Sign in and start managing contacts!</li>
+                    </ol>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-bolt me-2"></i>Most Used Actions</h2>
+
+                    <h3>Add Contact</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-arrow-right text-primary"></i>Dashboard → "Add New Contact"</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i>Fill required fields (Name, Phone/Email)</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i>Click "Save Contact"</li>
+                    </ul>
+
+                    <h3>Find Contact</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-search text-info"></i>Use search box (top of page)</li>
+                        <li><i class="fas fa-filter text-success"></i>Filter by category (dropdown)</li>
+                        <li><i class="fas fa-mouse-pointer text-warning"></i>Click contact card for details</li>
+                    </ul>
+
+                    <h3>Edit Contact</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-mouse-pointer text-primary"></i>Click contact card → "Edit Contact"</li>
+                        <li><i class="fas fa-edit text-info"></i>Make changes</li>
+                        <li><i class="fas fa-save text-success"></i>Click "Save Changes"</li>
+                    </ul>
+
+                    <h3>Bulk Actions</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-check-square text-primary"></i>Check multiple contacts</li>
+                        <li><i class="fas fa-envelope text-info"></i>Use "Bulk Email", "Bulk Update Categories", or "Bulk Update Status"</li>
+                    </ul>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-tags me-2"></i>Categories</h2>
+                    <div class="text-center">
+                        <span class="category-item"><i class="fas fa-home"></i>Family</span>
+                        <span class="category-item"><i class="fas fa-briefcase"></i>Work</span>
+                        <span class="category-item"><i class="fas fa-user-friends"></i>Friends</span>
+                        <span class="category-item"><i class="fas fa-exclamation-triangle"></i>Emergency</span>
+                        <span class="category-item"><i class="fas fa-graduation-cap"></i>School</span>
+                    </div>
+                    <p class="text-center text-muted mt-2">Use these to organize your contacts effectively</p>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-chart-bar me-2"></i>Dashboard Cards</h2>
+                    <ul class="action-list">
+                        <li><i class="fas fa-mouse-pointer text-primary"></i><strong>Click any card</strong> to see filtered contacts</li>
+                        <li><i class="fas fa-users text-primary"></i><strong>Total Contacts</strong> → All contacts</li>
+                        <li><i class="fas fa-star text-warning"></i><strong>Important</strong> → Highlighted contacts</li>
+                        <li><i class="fas fa-clock text-info"></i><strong>Recent</strong> → Recently added</li>
+                        <li><i class="fas fa-tags text-success"></i><strong>Category cards</strong> → Contacts in that category</li>
+                    </ul>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-wrench me-2"></i>Common Tasks</h2>
+
+                    <h3>Add Family Member</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-arrow-right text-primary"></i>Dropdown menu → "Manage Users"</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i>Enter email → "Add User"</li>
+                    </ul>
+
+                    <h3>Export Contacts</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-arrow-right text-primary"></i>Dashboard → "Export Contacts"</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i>Download as CSV file</li>
+                    </ul>
+
+                    <h3>Manage Categories</h3>
+                    <ul class="action-list">
+                        <li><i class="fas fa-arrow-right text-primary"></i>Dropdown menu → "Manage Categories"</li>
+                        <li><i class="fas fa-arrow-right text-primary"></i>Add/delete categories as needed</li>
+                    </ul>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-exclamation-triangle me-2"></i>Need Help?</h2>
+                    <ul class="action-list">
+                        <li><i class="fas fa-question-circle text-primary"></i><strong>Can't sign in?</strong> Check email/password</li>
+                        <li><i class="fas fa-question-circle text-primary"></i><strong>Contact not saving?</strong> Check internet connection</li>
+                        <li><i class="fas fa-question-circle text-primary"></i><strong>App not loading?</strong> Refresh page or try different browser</li>
+                        <li><i class="fas fa-question-circle text-primary"></i><strong>Still stuck?</strong> Contact family administrator</li>
+                    </ul>
+                </div>
+
+                <div class="quick-section">
+                    <h2><i class="fas fa-mobile-alt me-2"></i>Mobile Tips</h2>
+                    <ul class="action-list">
+                        <li><i class="fas fa-check text-success"></i>Works great on phones/tablets</li>
+                        <li><i class="fas fa-bookmark text-primary"></i>Bookmark for easy access</li>
+                        <li><i class="fas fa-expand-arrows-alt text-info"></i>Use landscape mode for better view</li>
+                    </ul>
+                </div>
+
+                <div class="tip-box">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Pro Tips</h5>
+                    <ul class="action-list">
+                        <li><i class="fas fa-star text-warning"></i>Mark emergency contacts as important</li>
+                        <li><i class="fas fa-tags text-info"></i>Use categories consistently for organization</li>
+                        <li><i class="fas fa-download text-primary"></i>Export your data regularly as backup</li>
+                        <li><i class="fas fa-search text-success"></i>Use search to quickly find any contact</li>
+                    </ul>
+                </div>
+
+                <div class="text-center mt-4">
+                    <h4>App URL</h4>
+                    <code class="fs-5">sadjei78.github.io/ma-webiii</code>
+                    <p class="text-muted mt-2">For detailed instructions, see the full User Guide</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="index.html" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to App
+                    </a>
+                    <a href="user-guide.html" class="btn btn-outline-info">
+                        <i class="fas fa-book me-2"></i>Full User Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
