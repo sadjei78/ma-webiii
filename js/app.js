@@ -1,3 +1,11 @@
+// Mobile viewport change detection
+let isMobileView = false;
+
+// Immediate mobile detection on script load
+function detectMobileImmediately() {
+    isMobileView = window.innerWidth <= 768;
+}
+
 // Mobile initialization function
 function initializeMobileView() {
     // Detect mobile immediately
@@ -23,22 +31,14 @@ function initializeMobileView() {
     }
 }
 
+// Call immediately when script loads
+detectMobileImmediately();
+
 // Call mobile initialization immediately
 initializeMobileView();
 
 // Also call on DOM ready
 document.addEventListener('DOMContentLoaded', initializeMobileView);
-
-// Mobile viewport change detection
-let isMobileView = false;
-
-// Immediate mobile detection on script load
-function detectMobileImmediately() {
-    isMobileView = window.innerWidth <= 768;
-}
-
-// Call immediately when script loads
-detectMobileImmediately();
 
 function checkMobileView() {
     const wasMobile = isMobileView;
