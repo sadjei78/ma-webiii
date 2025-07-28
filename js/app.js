@@ -5,6 +5,13 @@ function checkMobileView() {
     const wasMobile = isMobileView;
     isMobileView = window.innerWidth <= 768;
     
+    console.log('Mobile view check:', {
+        viewportWidth: window.innerWidth,
+        wasMobile: wasMobile,
+        isMobile: isMobileView,
+        userAgent: navigator.userAgent
+    });
+    
     // If viewport changed from desktop to mobile, refresh dashboard
     if (!wasMobile && isMobileView) {
         console.log('Viewport changed to mobile, refreshing dashboard');
@@ -17,11 +24,73 @@ function checkMobileView() {
 // Listen for viewport changes
 window.addEventListener('resize', checkMobileView);
 window.addEventListener('orientationchange', () => {
+    console.log('Orientation changed');
     setTimeout(checkMobileView, 100);
 });
 
 // Check on page load
-document.addEventListener('DOMContentLoaded', checkMobileView);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking mobile view');
+    checkMobileView();
+});
+
+// Mobile testing function
+function testMobileView() {
+    console.log('=== MOBILE VIEW TESTING ===');
+    console.log('Viewport width:', window.innerWidth);
+    console.log('Viewport height:', window.innerHeight);
+    console.log('Device pixel ratio:', window.devicePixelRatio);
+    console.log('User agent:', navigator.userAgent);
+    console.log('Is mobile device:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    console.log('Is mobile viewport:', isMobileView);
+    
+    const dashboardView = document.getElementById('dashboardView');
+    if (dashboardView) {
+        console.log('Dashboard view found:', {
+            display: dashboardView.style.display,
+            visibility: dashboardView.style.visibility,
+            opacity: dashboardView.style.opacity,
+            offsetHeight: dashboardView.offsetHeight,
+            offsetWidth: dashboardView.offsetWidth,
+            clientHeight: dashboardView.clientHeight,
+            clientWidth: dashboardView.clientWidth,
+            scrollHeight: dashboardView.scrollHeight,
+            scrollWidth: dashboardView.scrollWidth
+        });
+        
+        const cards = dashboardView.querySelectorAll('.card');
+        console.log('Dashboard cards found:', cards.length);
+        
+        cards.forEach((card, index) => {
+            console.log(`Card ${index}:`, {
+                display: card.style.display,
+                offsetHeight: card.offsetHeight,
+                offsetWidth: card.offsetWidth,
+                className: card.className
+            });
+        });
+    } else {
+        console.log('Dashboard view NOT found');
+    }
+    
+    // Test CSS computed styles
+    if (dashboardView) {
+        const computedStyle = window.getComputedStyle(dashboardView);
+        console.log('Dashboard computed styles:', {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            opacity: computedStyle.opacity,
+            position: computedStyle.position,
+            zIndex: computedStyle.zIndex
+        });
+    }
+}
+
+// Call mobile test on load
+window.addEventListener('load', () => {
+    console.log('Page loaded, running mobile tests');
+    setTimeout(testMobileView, 1000);
+});
 
 // Input sanitization function to prevent XSS
 function sanitizeInput(input) {
@@ -264,6 +333,42 @@ function showContacts() {
     renderContacts();
 }
 
+// Mobile-specific dashboard fix
+function forceMobileDashboardVisibility() {
+    if (isMobileView) {
+        console.log('Forcing mobile dashboard visibility');
+        
+        const dashboardView = document.getElementById('dashboardView');
+        if (dashboardView) {
+            // Force visibility
+            dashboardView.style.display = 'block';
+            dashboardView.style.visibility = 'visible';
+            dashboardView.style.opacity = '1';
+            dashboardView.style.position = 'relative';
+            dashboardView.style.zIndex = '1';
+            
+            // Force all child elements to be visible
+            const allElements = dashboardView.querySelectorAll('*');
+            allElements.forEach(element => {
+                element.style.display = '';
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+            });
+            
+            // Force cards to be visible
+            const cards = dashboardView.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.display = 'block';
+                card.style.visibility = 'visible';
+                card.style.opacity = '1';
+            });
+            
+            console.log('Mobile dashboard visibility forced');
+        }
+    }
+}
+
+// Call this function after dashboard updates
 function updateDashboard() {
     try {
         console.log('updateDashboard called');
@@ -423,10 +528,7 @@ function updateDashboard() {
         
         // Force visibility on mobile
         if (isMobileView) {
-            dashboardView.style.display = 'block';
-            dashboardView.style.visibility = 'visible';
-            dashboardView.style.opacity = '1';
-            console.log('Forced mobile visibility');
+            forceMobileDashboardVisibility();
         }
         
         console.log('Dashboard update completed successfully');

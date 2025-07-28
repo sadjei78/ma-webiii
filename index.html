@@ -37,9 +37,26 @@
         }
         /* Mobile-specific improvements */
         @media (max-width: 768px) {
+            /* Force all dashboard elements to be visible */
+            #dashboardView,
+            #dashboardView * {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 1 !important;
+            }
+            
+            /* Ensure cards are properly displayed */
+            .card {
+                display: block !important;
+                margin-bottom: 1rem !important;
+                width: 100% !important;
+            }
+            
             .clickable-card {
                 min-height: 120px;
-                display: flex;
+                display: flex !important;
                 align-items: center;
             }
             .clickable-card .card-body {
@@ -56,18 +73,8 @@
             .clickable-card i {
                 font-size: 1.5rem !important;
             }
-            /* Ensure dashboard is visible on mobile */
-            #dashboardView {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                z-index: 1 !important;
-            }
+            
             /* Mobile-specific card improvements */
-            .card {
-                margin-bottom: 1rem;
-            }
             .card-body {
                 padding: 1rem;
             }
@@ -85,10 +92,41 @@
             .row {
                 margin-left: -15px !important;
                 margin-right: -15px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
             }
             .row > * {
                 padding-left: 15px !important;
                 padding-right: 15px !important;
+            }
+            
+            /* Force Bootstrap grid to work */
+            .col-6, .col-12, .col-md-3, .col-md-6 {
+                flex: 0 0 auto !important;
+                width: auto !important;
+            }
+            .col-6 {
+                width: 50% !important;
+            }
+            .col-12 {
+                width: 100% !important;
+            }
+            
+            /* Ensure buttons are clickable */
+            .btn {
+                display: inline-block !important;
+                width: auto !important;
+                min-height: 44px !important; /* Touch target size */
+            }
+            
+            /* Debug styles - add visible borders */
+            #dashboardView {
+                border: 2px solid red !important;
+                background-color: rgba(255, 0, 0, 0.1) !important;
+            }
+            .card {
+                border: 1px solid blue !important;
+                background-color: rgba(0, 0, 255, 0.1) !important;
             }
         }
         .important-contact {
