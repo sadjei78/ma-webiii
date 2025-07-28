@@ -3,7 +3,7 @@ let allContacts = [];
 let allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare', 'Services'];
 
 // Check authentication before loading app
-function loadApp() {
+window.loadApp = function() {
     // Check if user is authenticated
     if (!auth.currentUser) {
         window.location.href = '/login.html';
@@ -20,7 +20,15 @@ function loadApp() {
     if (userInfo) {
         userInfo.textContent = auth.currentUser.email;
     }
-}
+};
+
+// Show login function (for Firebase config)
+window.showLogin = function() {
+    // If we're not already on the login page, redirect
+    if (window.location.pathname !== '/login.html') {
+        window.location.href = '/login.html';
+    }
+};
 
 // Sign out function
 function signOut() {

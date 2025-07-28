@@ -53,18 +53,78 @@
     <script src="public/js/firebase-config.js"></script>
     
     <script>
-        function showStatus(message, type = 'info') {
+        // Global functions for testing
+        window.showStatus = function(message, type = 'info') {
             const statusDiv = document.getElementById('status');
             statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
-        }
+        };
         
-        function addResult(message, type = 'info') {
+        window.addResult = function(message, type = 'info') {
             const resultsDiv = document.getElementById('results');
             const div = document.createElement('div');
             div.className = `status ${type}`;
             div.innerHTML = message;
             resultsDiv.appendChild(div);
-        }
+        };
+        
+        window.testAuth = function() {
+            addResult('Testing authentication...', 'info');
+            
+            const auth = firebase.auth();
+            const user = auth.currentUser;
+            
+            if (user) {
+                addResult(`✅ User logged in: ${user.email}`, 'success');
+            } else {
+                addResult('ℹ️ No user currently logged in', 'info');
+            }
+        };
+        
+        window.testFirestore = function() {
+            addResult('Testing Firestore connection...', 'info');
+            
+            const db = firebase.firestore();
+            
+            // Try to read from a test collection
+            db.collection('test').limit(1).get()
+                .then(() => {
+                    addResult('✅ Firestore connection successful', 'success');
+                })
+                .catch((error) => {
+                    addResult(`❌ Firestore error: ${error.message}`, 'error');
+                });
+        };
+        
+        window.createTestContact = function() {
+            addResult('Creating test contact...', 'info');
+            
+            const db = firebase.firestore();
+            const auth = firebase.auth();
+            
+            if (!auth.currentUser) {
+                addResult('❌ Must be logged in to create contacts', 'error');
+                return;
+            }
+            
+            const testContact = {
+                name: 'Test Contact',
+                email: 'test@example.com',
+                phone: '+1234567890',
+                category: 'Test',
+                important: false,
+                archived: false,
+                created_date: new Date().toISOString(),
+                last_modified: new Date().toISOString()
+            };
+            
+            db.collection('contacts').add(testContact)
+                .then((docRef) => {
+                    addResult(`✅ Test contact created with ID: ${docRef.id}`, 'success');
+                })
+                .catch((error) => {
+                    addResult(`❌ Error creating contact: ${error.message}`, 'error');
+                });
+        };
         
         // Test Firebase initialization
         try {
@@ -95,65 +155,6 @@
             
         } catch (error) {
             showStatus(`❌ Error: ${error.message}`, 'error');
-        }
-        
-        function testAuth() {
-            addResult('Testing authentication...', 'info');
-            
-            const auth = firebase.auth();
-            const user = auth.currentUser;
-            
-            if (user) {
-                addResult(`✅ User logged in: ${user.email}`, 'success');
-            } else {
-                addResult('ℹ️ No user currently logged in', 'info');
-            }
-        }
-        
-        function testFirestore() {
-            addResult('Testing Firestore connection...', 'info');
-            
-            const db = firebase.firestore();
-            
-            // Try to read from a test collection
-            db.collection('test').limit(1).get()
-                .then(() => {
-                    addResult('✅ Firestore connection successful', 'success');
-                })
-                .catch((error) => {
-                    addResult(`❌ Firestore error: ${error.message}`, 'error');
-                });
-        }
-        
-        function createTestContact() {
-            addResult('Creating test contact...', 'info');
-            
-            const db = firebase.firestore();
-            const auth = firebase.auth();
-            
-            if (!auth.currentUser) {
-                addResult('❌ Must be logged in to create contacts', 'error');
-                return;
-            }
-            
-            const testContact = {
-                name: 'Test Contact',
-                email: 'test@example.com',
-                phone: '+1234567890',
-                category: 'Test',
-                important: false,
-                archived: false,
-                created_date: new Date().toISOString(),
-                last_modified: new Date().toISOString()
-            };
-            
-            db.collection('contacts').add(testContact)
-                .then((docRef) => {
-                    addResult(`✅ Test contact created with ID: ${docRef.id}`, 'success');
-                })
-                .catch((error) => {
-                    addResult(`❌ Error creating contact: ${error.message}`, 'error');
-                });
         }
     </script>
 </body>

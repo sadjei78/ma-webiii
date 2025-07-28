@@ -32,11 +32,15 @@ db.enablePersistence()
 auth.onAuthStateChanged((user) => {
     if (user) {
         console.log('User is signed in:', user.email);
-        // User is signed in, load the app
-        loadApp();
+        // User is signed in, load the app if function exists
+        if (typeof loadApp === 'function') {
+            loadApp();
+        }
     } else {
         console.log('User is signed out');
-        // User is signed out, show login
-        showLogin();
+        // User is signed out, show login if function exists
+        if (typeof showLogin === 'function') {
+            showLogin();
+        }
     }
 }); 
