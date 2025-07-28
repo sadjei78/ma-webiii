@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Firebase Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Simple Firebase Test</h1>
+    <div id="output"></div>
+
+    <!-- Load Firebase SDKs first -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        // Step 1: Check if Firebase SDK is loaded
+        log('Step 1: Checking Firebase SDK...');
+        if (typeof firebase === 'undefined') {
+            log('ERROR: Firebase SDK not loaded', 'error');
+        } else {
+            log('SUCCESS: Firebase SDK loaded', 'success');
+        }
+
+        // Step 2: Load configuration
+        log('Step 2: Loading Firebase configuration...');
+        const configScript = document.createElement('script');
+        configScript.src = 'js/firebase-config.js';
+        configScript.onload = function() {
+            log('SUCCESS: Firebase config loaded', 'success');
+            
+            // Step 3: Test initialization
+            setTimeout(() => {
+                log('Step 3: Testing Firebase initialization...');
+                try {
+                    if (firebase.apps && firebase.apps.length > 0) {
+                        log('SUCCESS: Firebase initialized', 'success');
+                        
+                        // Step 4: Test Auth
+                        log('Step 4: Testing Authentication...');
+                        const auth = firebase.auth();
+                        log('SUCCESS: Auth object created', 'success');
+                        
+                        // Step 5: Test Firestore
+                        log('Step 5: Testing Firestore...');
+                        const db = firebase.firestore();
+                        log('SUCCESS: Firestore object created', 'success');
+                        
+                        // Step 6: Test connection
+                        log('Step 6: Testing database connection...');
+                        db.collection('test').limit(1).get()
+                            .then(() => {
+                                log('SUCCESS: Database connection working', 'success');
+                            })
+                            .catch((error) => {
+                                log(`ERROR: Database connection failed: ${error.message}`, 'error');
+                            });
+                        
+                    } else {
+                        log('ERROR: Firebase not initialized', 'error');
+                    }
+                } catch (error) {
+                    log(`ERROR: ${error.message}`, 'error');
+                }
+            }, 1000);
+        };
+        configScript.onerror = function() {
+            log('ERROR: Failed to load firebase-config.js', 'error');
+        };
+        document.head.appendChild(configScript);
+    </script>
+</body>
+</html> 

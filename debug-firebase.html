@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Firebase Debug Console</h1>
+    
+    <div id="status"></div>
+    
+    <div>
+        <button onclick="checkSDK()">Check SDK Loading</button>
+        <button onclick="checkConfig()">Check Configuration</button>
+        <button onclick="checkAuth()">Check Authentication</button>
+        <button onclick="checkFirestore()">Check Firestore</button>
+        <button onclick="testConnection()">Test Full Connection</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Check if Firebase SDK is loaded
+        window.checkSDK = function() {
+            clearResults();
+            addResult('🔍 Checking Firebase SDK...', 'info');
+            
+            try {
+                if (typeof firebase === 'undefined') {
+                    addResult('❌ Firebase SDK not loaded', 'error');
+                    return;
+                }
+                
+                addResult('✅ Firebase SDK loaded', 'success');
+                
+                if (firebase.app) {
+                    addResult('✅ Firebase App available', 'success');
+                } else {
+                    addResult('❌ Firebase App not available', 'error');
+                }
+                
+                if (firebase.auth) {
+                    addResult('✅ Firebase Auth available', 'success');
+                } else {
+                    addResult('❌ Firebase Auth not available', 'error');
+                }
+                
+                if (firebase.firestore) {
+                    addResult('✅ Firebase Firestore available', 'success');
+                } else {
+                    addResult('❌ Firebase Firestore not available', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Error checking SDK: ${error.message}`, 'error');
+            }
+        };
+        
+        // Check Firebase configuration
+        window.checkConfig = function() {
+            clearResults();
+            addResult('🔍 Checking Firebase Configuration...', 'info');
+            
+            try {
+                // Try to load the config file
+                const script = document.createElement('script');
+                script.src = 'js/firebase-config.js';
+                script.onload = function() {
+                    addResult('✅ Firebase config file loaded', 'success');
+                    
+                    // Check if firebase is initialized
+                    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                        addResult('✅ Firebase initialized', 'success');
+                        const app = firebase.app();
+                        addResult(`✅ App name: ${app.name}`, 'success');
+                    } else {
+                        addResult('❌ Firebase not initialized', 'error');
+                    }
+                };
+                script.onerror = function() {
+                    addResult('❌ Failed to load firebase-config.js', 'error');
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                addResult(`❌ Error checking config: ${error.message}`, 'error');
+            }
+        };
+        
+        // Check Authentication
+        window.checkAuth = function() {
+            clearResults();
+            addResult('🔍 Checking Authentication...', 'info');
+            
+            try {
+                if (typeof firebase === 'undefined') {
+                    addResult('❌ Firebase not loaded', 'error');
+                    return;
+                }
+                
+                const auth = firebase.auth();
+                addResult('✅ Auth object created', 'success');
+                
+                const user = auth.currentUser;
+                if (user) {
+                    addResult(`✅ User logged in: ${user.email}`, 'success');
+                } else {
+                    addResult('ℹ️ No user currently logged in', 'info');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Auth error: ${error.message}`, 'error');
+            }
+        };
+        
+        // Check Firestore
+        window.checkFirestore = function() {
+            clearResults();
+            addResult('🔍 Checking Firestore...', 'info');
+            
+            try {
+                if (typeof firebase === 'undefined') {
+                    addResult('❌ Firebase not loaded', 'error');
+                    return;
+                }
+                
+                const db = firebase.firestore();
+                addResult('✅ Firestore object created', 'success');
+                
+                // Try a simple read operation
+                db.collection('test').limit(1).get()
+                    .then(() => {
+                        addResult('✅ Firestore read successful', 'success');
+                    })
+                    .catch((error) => {
+                        addResult(`❌ Firestore read failed: ${error.message}`, 'error');
+                    });
+                
+            } catch (error) {
+                addResult(`❌ Firestore error: ${error.message}`, 'error');
+            }
+        };
+        
+        // Test full connection
+        window.testConnection = function() {
+            clearResults();
+            addResult('🔍 Testing Full Firebase Connection...', 'info');
+            
+            // Load config first
+            const script = document.createElement('script');
+            script.src = 'js/firebase-config.js';
+            script.onload = function() {
+                addResult('✅ Config loaded, testing connection...', 'info');
+                
+                setTimeout(() => {
+                    try {
+                        if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                            addResult('✅ Firebase initialized successfully', 'success');
+                            
+                            const auth = firebase.auth();
+                            const db = firebase.firestore();
+                            
+                            addResult('✅ Auth and Firestore objects created', 'success');
+                            
+                            // Test authentication state
+                            auth.onAuthStateChanged((user) => {
+                                if (user) {
+                                    addResult(`✅ User authenticated: ${user.email}`, 'success');
+                                } else {
+                                    addResult('ℹ️ No user authenticated', 'info');
+                                }
+                            });
+                            
+                        } else {
+                            addResult('❌ Firebase not properly initialized', 'error');
+                        }
+                    } catch (error) {
+                        addResult(`❌ Connection test failed: ${error.message}`, 'error');
+                    }
+                }, 1000);
+            };
+            script.onerror = function() {
+                addResult('❌ Failed to load configuration', 'error');
+            };
+            document.head.appendChild(script);
+        };
+        
+        // Auto-run basic checks
+        window.onload = function() {
+            showStatus('Firebase Debug Console Ready', 'info');
+            setTimeout(() => {
+                checkSDK();
+            }, 500);
+        };
+    </script>
+</body>
+</html> 
