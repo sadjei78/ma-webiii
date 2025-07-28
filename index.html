@@ -56,6 +56,23 @@
             .clickable-card i {
                 font-size: 1.5rem !important;
             }
+            /* Ensure dashboard is visible on mobile */
+            #dashboardView {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            /* Mobile-specific card improvements */
+            .card {
+                margin-bottom: 1rem;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            /* Ensure text is readable on mobile */
+            h2, h3, h4, h5, h6 {
+                word-wrap: break-word;
+            }
         }
         .important-contact {
             border-left: 4px solid #ffc107;

@@ -198,9 +198,12 @@ function showDashboard() {
         document.getElementById('dashboardView').style.display = 'block';
         document.getElementById('contactsView').style.display = 'none';
         
-        // Show loading state while updating dashboard
+        // Check if dashboard content already exists
         const dashboardContent = document.getElementById('dashboardView');
-        if (dashboardContent) {
+        const hasDashboardStructure = dashboardContent && dashboardContent.querySelector('.row');
+        
+        if (!hasDashboardStructure) {
+            // Only show loading if we need to rebuild the structure
             dashboardContent.innerHTML = `
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
@@ -209,12 +212,15 @@ function showDashboard() {
                     <p class="mt-3 text-muted">Loading dashboard...</p>
                 </div>
             `;
-        }
-        
-        // Update dashboard after a short delay to ensure DOM is ready
-        setTimeout(() => {
+            
+            // Update dashboard after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                updateDashboard();
+            }, 100);
+        } else {
+            // If structure exists, just update the data
             updateDashboard();
-        }, 100);
+        }
     } catch (error) {
         console.error('Error showing dashboard:', error);
         // Fallback to basic dashboard
@@ -235,9 +241,17 @@ function showContacts() {
 
 function updateDashboard() {
     try {
+        console.log('updateDashboard called');
+        console.log('Mobile device:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+        
         // First, restore the original dashboard HTML structure
         const dashboardView = document.getElementById('dashboardView');
+        console.log('Dashboard view element:', dashboardView);
+        console.log('Dashboard view display:', dashboardView ? dashboardView.style.display : 'null');
+        console.log('Dashboard view has row:', dashboardView ? dashboardView.querySelector('.row') : 'null');
+        
         if (dashboardView && !dashboardView.querySelector('.row')) {
+            console.log('Restoring dashboard HTML structure');
             dashboardView.innerHTML = `
                 <div class="row">
                     <div class="col-12">
@@ -330,6 +344,9 @@ function updateDashboard() {
                     </div>
                 </div>
             `;
+            console.log('Dashboard HTML structure restored');
+        } else {
+            console.log('Dashboard structure already exists, updating data only');
         }
 
         const total = allContacts.length;
@@ -337,6 +354,8 @@ function updateDashboard() {
         const archived = allContacts.filter(c => c.archived).length;
         const active = total - archived;
         const categories = new Set(allContacts.map(c => c.category || 'Uncategorized')).size;
+
+        console.log('Dashboard stats:', { total, important, active, categories });
 
         // Update dashboard stats with error handling
         const totalElement = document.getElementById('totalContacts');
@@ -368,6 +387,8 @@ function updateDashboard() {
         if (recentElement) {
             recentElement.innerHTML = recentHtml || '<div class="list-group-item text-muted">No contacts yet</div>';
         }
+        
+        console.log('Dashboard update completed successfully');
     } catch (error) {
         console.error('Error updating dashboard:', error);
         // Fallback to show basic info
