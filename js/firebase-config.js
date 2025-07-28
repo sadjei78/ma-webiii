@@ -22,31 +22,29 @@ const auth = firebase.auth();
 try {
     db.enablePersistence()
         .then(() => {
-            console.log('Offline persistence enabled successfully');
+            // Offline persistence enabled successfully
         })
         .catch((err) => {
             if (err.code == 'failed-precondition') {
-                console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                // Multiple tabs open, persistence can only be enabled in one tab at a time.
             } else if (err.code == 'unimplemented') {
-                console.log('The current browser does not support persistence.');
+                // The current browser does not support persistence.
             } else {
-                console.log('Persistence error:', err.message);
+                // Persistence error occurred
             }
         });
 } catch (error) {
-    console.log('Could not enable offline persistence:', error.message);
+    // Could not enable offline persistence
 }
 
 // Authentication state observer
 auth.onAuthStateChanged((user) => {
     if (user) {
-        console.log('User is signed in:', user.email);
         // User is signed in, load the app if function exists
         if (typeof loadApp === 'function') {
             loadApp();
         }
     } else {
-        console.log('User is signed out');
         // User is signed out, show login if function exists
         if (typeof showLogin === 'function') {
             showLogin();

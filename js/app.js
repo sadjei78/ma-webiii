@@ -1,72 +1,68 @@
-// Global variables
-let allContacts = [];
-let allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare', 'Services'];
+// Input sanitization function to prevent XSS
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = input;
+    return div.innerHTML;
+}
 
-// Check authentication before loading app
-window.loadApp = async function() {
-    // Check if user is authenticated
-    if (!auth.currentUser) {
-        window.location.href = 'login.html';
-        return;
+// Safe innerHTML assignment with sanitization
+function setInnerHTML(elementId, content) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.innerHTML = sanitizeInput(content);
     }
-    
-    // Check if user is authorized using Firestore
+}
+
+// Global functions for cross-file access
+window.loadApp = async function() {
     try {
-        const isAuthorized = await isUserAuthorized(auth.currentUser.email);
-        
-        if (!isAuthorized) {
-            alert(SECURITY_CONFIG.accessDeniedMessage);
-            auth.signOut().then(() => {
-                window.location.href = 'login.html';
-            });
+        // Check if user is authorized
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            showLogin();
             return;
         }
         
-        // User is authorized - show app content
+        const isAuthorized = await isUserAuthorized(user.email);
+        if (!isAuthorized) {
+            document.getElementById('appContent').style.display = 'none';
+            document.getElementById('accessDenied').style.display = 'block';
+            return;
+        }
+        
+        // Show app content
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('accessDenied').style.display = 'none';
         
-        // Show user management button for authorized users
-        document.getElementById('manageUsersBtn').style.display = 'block';
-        
-        // Load user email
-        const user = firebase.auth().currentUser;
-        if (user) {
-            document.getElementById('userEmail').textContent = user.email;
-        }
+        // Update user info
+        document.getElementById('userInfo').textContent = user.email.split('@')[0];
+        document.getElementById('userEmail').textContent = user.email;
         
         // Load data
-        await loadCategories();
         await loadContacts();
+        await loadCategories();
         
         // Show dashboard by default
         showDashboard();
         
     } catch (error) {
-        console.error('Error checking authorization:', error);
-        alert('Error checking authorization. Please try again.');
-        auth.signOut().then(() => {
-            window.location.href = 'login.html';
-        });
+        console.error('Error loading app:', error);
+        showLogin();
     }
 };
 
-// Show login function (for Firebase config)
 window.showLogin = function() {
-    // If we're not already on the login page, redirect
-    if (!window.location.pathname.includes('login.html')) {
-        window.location.href = 'login.html';
-    }
+    window.location.href = 'login.html';
 };
 
-// Sign out function
-function signOut() {
-    auth.signOut().then(() => {
+window.signOut = function() {
+    firebase.auth().signOut().then(() => {
         window.location.href = 'login.html';
     }).catch((error) => {
         console.error('Error signing out:', error);
     });
-}
+};
 
 // Firebase Functions
 async function loadContacts() {
@@ -91,7 +87,7 @@ async function loadCategories() {
         const snapshot = await db.collection('categories').get();
         const categories = snapshot.docs.map(doc => doc.data().name);
         allCategories = ['Uncategorized', ...categories];
-        console.log('Loaded categories:', allCategories); // Debug log
+        // Categories loaded successfully
         updateCategoryFilters();
     } catch (error) {
         console.error('Error loading categories:', error);
@@ -748,14 +744,14 @@ function showContactDetail(contactId) {
         </div>` : '';
     
     document.getElementById('detailModalTitle').textContent = contact.name;
-    document.getElementById('contactDetailContent').innerHTML = `
+    const sanitizedContent = `
         ${duplicateInfo}
         <div class="row">
             <div class="col-md-6">
                 <h6>Basic Information</h6>
-                <p><strong>Name:</strong> ${contact.name}</p>
-                ${contact.full_name ? `<p><strong>Full Name:</strong> ${contact.full_name}</p>` : ''}
-                ${contact.organization ? `<p><strong>Organization:</strong> ${contact.organization}</p>` : ''}
+                <p><strong>Name:</strong> ${sanitizeInput(contact.name)}</p>
+                ${contact.full_name ? `<p><strong>Full Name:</strong> ${sanitizeInput(contact.full_name)}</p>` : ''}
+                ${contact.organization ? `<p><strong>Organization:</strong> ${sanitizeInput(contact.organization)}</p>` : ''}
                 <p><strong>Categories:</strong> ${categoryBadges}</p>
                 <p><strong>Status:</strong> 
                     ${contact.important ? '<span class="badge bg-warning">Important</span>' : ''}
@@ -773,7 +769,7 @@ function showContactDetail(contactId) {
         <div class="row mt-3">
             <div class="col-12">
                 <h6>Notes</h6>
-                <p>${contact.notes}</p>
+                <p>${sanitizeInput(contact.notes)}</p>
             </div>
         </div>
         ` : ''}
@@ -785,6 +781,7 @@ function showContactDetail(contactId) {
             </div>
         </div>
     `;
+    document.getElementById('contactDetailContent').innerHTML = sanitizedContent;
     
     document.getElementById('editContactBtn').onclick = () => editContactFromDetail(contactId);
     
