@@ -23,20 +23,24 @@ function showHelpModal() {
 // Global functions for cross-file access
 window.loadApp = async function() {
     try {
+        // Show loading state
+        showLoading(true);
+        
         // Check if user is authorized
         const user = firebase.auth().currentUser;
         if (!user) {
             showLogin();
             return;
         }
-        
+
         const isAuthorized = await isUserAuthorized(user.email);
         if (!isAuthorized) {
             document.getElementById('appContent').style.display = 'none';
             document.getElementById('accessDenied').style.display = 'block';
+            showLoading(false);
             return;
         }
-        
+
         // Show app content
         document.getElementById('appContent').style.display = 'block';
         document.getElementById('accessDenied').style.display = 'none';
@@ -45,15 +49,31 @@ window.loadApp = async function() {
         document.getElementById('userInfo').textContent = user.email.split('@')[0];
         document.getElementById('userEmail').textContent = user.email;
         
-        // Load data
-        await loadContacts();
-        await loadCategories();
+        // Load data with better error handling
+        try {
+            await loadContacts();
+            await loadCategories();
+            
+            // Show dashboard by default after data is loaded
+            showDashboard();
+        } catch (dataError) {
+            console.error('Error loading data:', dataError);
+            // Show error state but don't redirect to login
+            document.getElementById('dashboardView').innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Data Loading Error</strong><br>
+                    Please check your internet connection and refresh the page.
+                </div>
+            `;
+        }
         
-        // Show dashboard by default
-        showDashboard();
+        // Hide loading spinner
+        showLoading(false);
         
     } catch (error) {
         console.error('Error loading app:', error);
+        showLoading(false);
         showLogin();
     }
 };
@@ -72,20 +92,25 @@ window.signOut = function() {
 
 // Firebase Functions
 async function loadContacts() {
-    showLoading(true);
     try {
         const snapshot = await db.collection('contacts').orderBy('name').get();
         allContacts = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
-        updateDashboard();
-        renderContacts();
+        
+        // Update UI only if elements exist
+        try {
+            updateDashboard();
+            renderContacts();
+        } catch (uiError) {
+            console.error('Error updating UI:', uiError);
+        }
     } catch (error) {
         console.error('Error loading contacts:', error);
-        alert('Error loading contacts. Please try again.');
+        // Don't show alert on mobile, just log the error
+        allContacts = []; // Set empty array as fallback
     }
-    showLoading(false);
 }
 
 async function loadCategories() {
@@ -169,9 +194,37 @@ async function addCategory(categoryName) {
 
 // UI Functions
 function showDashboard() {
-    document.getElementById('dashboardView').style.display = 'block';
-    document.getElementById('contactsView').style.display = 'none';
-    updateDashboard();
+    try {
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('contactsView').style.display = 'none';
+        
+        // Show loading state while updating dashboard
+        const dashboardContent = document.getElementById('dashboardView');
+        if (dashboardContent) {
+            dashboardContent.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading dashboard...</p>
+                </div>
+            `;
+        }
+        
+        // Update dashboard after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            updateDashboard();
+        }, 100);
+    } catch (error) {
+        console.error('Error showing dashboard:', error);
+        // Fallback to basic dashboard
+        document.getElementById('dashboardView').innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Dashboard loading error. Please refresh the page.
+            </div>
+        `;
+    }
 }
 
 function showContacts() {
@@ -182,6 +235,103 @@ function showContacts() {
 
 function updateDashboard() {
     try {
+        // First, restore the original dashboard HTML structure
+        const dashboardView = document.getElementById('dashboardView');
+        if (dashboardView && !dashboardView.querySelector('.row')) {
+            dashboardView.innerHTML = `
+                <div class="row">
+                    <div class="col-12">
+                        <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+                        <p class="text-muted">Overview of your contact management system</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('all')">
+                            <div class="card-body">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h6 class="card-title">Total Contacts</h6>
+                                <h4 class="text-primary" id="totalContacts">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('important')">
+                            <div class="card-body">
+                                <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                                <h6 class="card-title">Important</h6>
+                                <h4 class="text-warning" id="importantContacts">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('active')">
+                            <div class="card-body">
+                                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                                <h6 class="card-title">Active</h6>
+                                <h4 class="text-success" id="activeContacts">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('categories')">
+                            <div class="card-body">
+                                <i class="fas fa-tags fa-2x text-info mb-2"></i>
+                                <h6 class="card-title">Categories</h6>
+                                <h4 class="text-info" id="categoriesCount">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clock me-2"></i>Recent Contacts</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentContacts" class="list-group">
+                                    <!-- Recent contacts will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="showAddContactModal()">
+                                        <i class="fas fa-plus me-2"></i>Add New Contact
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="exportContacts()">
+                                        <i class="fas fa-download me-2"></i>Export Contacts
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="showContacts()">
+                                        <i class="fas fa-users me-2"></i>View All Contacts
+                                    </button>
+                                    <div class="dropdown-divider my-3"></div>
+                                    <h6><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="user-guide.html" target="_blank" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-book me-2"></i>Full User Guide
+                                        </a>
+                                        <a href="quick-reference.html" target="_blank" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         const total = allContacts.length;
         const important = allContacts.filter(c => c.important).length;
         const archived = allContacts.filter(c => c.archived).length;
