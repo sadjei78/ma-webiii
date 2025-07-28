@@ -159,11 +159,14 @@ window.signOut = function() {
 // Firebase Functions
 async function loadContacts() {
     try {
+        console.log('Loading contacts...');
         const snapshot = await db.collection('contacts').orderBy('name').get();
         allContacts = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+        
+        console.log('Contacts loaded:', allContacts.length);
         
         // Update UI only if elements exist
         try {
@@ -346,6 +349,8 @@ function forceMobileDashboardVisibility() {
 // Call this function after dashboard updates
 function updateDashboard() {
     try {
+        console.log('updateDashboard called, allContacts length:', allContacts.length);
+        
         // First, restore the original dashboard HTML structure
         const dashboardView = document.getElementById('dashboardView');
         
@@ -454,6 +459,8 @@ function updateDashboard() {
         const archived = allContacts.filter(c => c.archived).length;
         const active = total - archived;
         const categories = new Set(allContacts.map(c => c.category || 'Uncategorized')).size;
+
+        console.log('Dashboard stats:', { total, important, active, categories });
 
         // Update dashboard stats with error handling
         const totalElement = document.getElementById('totalContacts');
