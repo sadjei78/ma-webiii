@@ -1,14 +1,10 @@
 // Mobile initialization function
 function initializeMobileView() {
-    console.log('Initializing mobile view...');
-    
     // Detect mobile immediately
     detectMobileImmediately();
     
     // If mobile, force visibility
     if (isMobileView) {
-        console.log('Mobile detected, forcing initial visibility');
-        
         // Force app content visibility
         const appContent = document.getElementById('appContent');
         if (appContent) {
@@ -24,8 +20,6 @@ function initializeMobileView() {
             dashboardView.style.visibility = 'visible';
             dashboardView.style.opacity = '1';
         }
-        
-        console.log('Mobile initialization complete');
     }
 }
 
@@ -41,11 +35,6 @@ let isMobileView = false;
 // Immediate mobile detection on script load
 function detectMobileImmediately() {
     isMobileView = window.innerWidth <= 768;
-    console.log('Immediate mobile detection:', {
-        viewportWidth: window.innerWidth,
-        isMobile: isMobileView,
-        userAgent: navigator.userAgent
-    });
 }
 
 // Call immediately when script loads
@@ -55,16 +44,8 @@ function checkMobileView() {
     const wasMobile = isMobileView;
     isMobileView = window.innerWidth <= 768;
     
-    console.log('Mobile view check:', {
-        viewportWidth: window.innerWidth,
-        wasMobile: wasMobile,
-        isMobile: isMobileView,
-        userAgent: navigator.userAgent
-    });
-    
     // If viewport changed from desktop to mobile, refresh dashboard
     if (!wasMobile && isMobileView) {
-        console.log('Viewport changed to mobile, refreshing dashboard');
         setTimeout(() => {
             updateDashboard();
         }, 100);
@@ -74,73 +55,13 @@ function checkMobileView() {
 // Listen for viewport changes
 window.addEventListener('resize', checkMobileView);
 window.addEventListener('orientationchange', () => {
-    console.log('Orientation changed');
     setTimeout(checkMobileView, 100);
 });
 
 // Check on page load
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, checking mobile view');
     detectMobileImmediately();
     checkMobileView();
-});
-
-// Mobile testing function
-function testMobileView() {
-    console.log('=== MOBILE VIEW TESTING ===');
-    console.log('Viewport width:', window.innerWidth);
-    console.log('Viewport height:', window.innerHeight);
-    console.log('Device pixel ratio:', window.devicePixelRatio);
-    console.log('User agent:', navigator.userAgent);
-    console.log('Is mobile device:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-    console.log('Is mobile viewport:', isMobileView);
-    
-    const dashboardView = document.getElementById('dashboardView');
-    if (dashboardView) {
-        console.log('Dashboard view found:', {
-            display: dashboardView.style.display,
-            visibility: dashboardView.style.visibility,
-            opacity: dashboardView.style.opacity,
-            offsetHeight: dashboardView.offsetHeight,
-            offsetWidth: dashboardView.offsetWidth,
-            clientHeight: dashboardView.clientHeight,
-            clientWidth: dashboardView.clientWidth,
-            scrollHeight: dashboardView.scrollHeight,
-            scrollWidth: dashboardView.scrollWidth
-        });
-        
-        const cards = dashboardView.querySelectorAll('.card');
-        console.log('Dashboard cards found:', cards.length);
-        
-        cards.forEach((card, index) => {
-            console.log(`Card ${index}:`, {
-                display: card.style.display,
-                offsetHeight: card.offsetHeight,
-                offsetWidth: card.offsetWidth,
-                className: card.className
-            });
-        });
-    } else {
-        console.log('Dashboard view NOT found');
-    }
-    
-    // Test CSS computed styles
-    if (dashboardView) {
-        const computedStyle = window.getComputedStyle(dashboardView);
-        console.log('Dashboard computed styles:', {
-            display: computedStyle.display,
-            visibility: computedStyle.visibility,
-            opacity: computedStyle.opacity,
-            position: computedStyle.position,
-            zIndex: computedStyle.zIndex
-        });
-    }
-}
-
-// Call mobile test on load
-window.addEventListener('load', () => {
-    console.log('Page loaded, running mobile tests');
-    setTimeout(testMobileView, 1000);
 });
 
 // Input sanitization function to prevent XSS
@@ -340,8 +261,6 @@ async function addCategory(categoryName) {
 // UI Functions
 function showDashboard() {
     try {
-        console.log('showDashboard called, mobile view:', isMobileView);
-        
         document.getElementById('dashboardView').style.display = 'block';
         document.getElementById('contactsView').style.display = 'none';
         
@@ -396,8 +315,6 @@ function showContacts() {
 // Mobile-specific dashboard fix
 function forceMobileDashboardVisibility() {
     if (isMobileView) {
-        console.log('Forcing mobile dashboard visibility');
-        
         const dashboardView = document.getElementById('dashboardView');
         if (dashboardView) {
             // Force visibility
@@ -422,8 +339,6 @@ function forceMobileDashboardVisibility() {
                 card.style.visibility = 'visible';
                 card.style.opacity = '1';
             });
-            
-            console.log('Mobile dashboard visibility forced');
         }
     }
 }
@@ -431,19 +346,10 @@ function forceMobileDashboardVisibility() {
 // Call this function after dashboard updates
 function updateDashboard() {
     try {
-        console.log('updateDashboard called');
-        console.log('Mobile device:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-        console.log('Viewport width:', window.innerWidth);
-        console.log('Is mobile view:', isMobileView);
-        
         // First, restore the original dashboard HTML structure
         const dashboardView = document.getElementById('dashboardView');
-        console.log('Dashboard view element:', dashboardView);
-        console.log('Dashboard view display:', dashboardView ? dashboardView.style.display : 'null');
-        console.log('Dashboard view has row:', dashboardView ? dashboardView.querySelector('.row') : 'null');
         
         if (dashboardView && !dashboardView.querySelector('.row')) {
-            console.log('Restoring dashboard HTML structure');
             dashboardView.innerHTML = `
                 <div class="row">
                     <div class="col-12">
@@ -536,15 +442,11 @@ function updateDashboard() {
                     </div>
                 </div>
             `;
-            console.log('Dashboard HTML structure restored');
             
             // Force a reflow for mobile devices
             if (isMobileView) {
                 dashboardView.offsetHeight; // Force reflow
-                console.log('Forced reflow for mobile view');
             }
-        } else {
-            console.log('Dashboard structure already exists, updating data only');
         }
 
         const total = allContacts.length;
@@ -552,8 +454,6 @@ function updateDashboard() {
         const archived = allContacts.filter(c => c.archived).length;
         const active = total - archived;
         const categories = new Set(allContacts.map(c => c.category || 'Uncategorized')).size;
-
-        console.log('Dashboard stats:', { total, important, active, categories });
 
         // Update dashboard stats with error handling
         const totalElement = document.getElementById('totalContacts');
@@ -591,7 +491,6 @@ function updateDashboard() {
             forceMobileDashboardVisibility();
         }
         
-        console.log('Dashboard update completed successfully');
     } catch (error) {
         console.error('Error updating dashboard:', error);
         // Fallback to show basic info
@@ -707,11 +606,9 @@ function updateCategoryFilters() {
     
     if (categorySelect) {
         categorySelect.innerHTML = options.join('');
-        console.log('Updated category filter dropdown'); // Debug log
     }
     if (contactCategory) {
         contactCategory.innerHTML = options.join('');
-        console.log('Updated contact category dropdown'); // Debug log
     }
 }
 
