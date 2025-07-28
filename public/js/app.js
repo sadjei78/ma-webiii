@@ -5,10 +5,20 @@ let allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare',
 // Check authentication before loading app
 window.loadApp = function() {
     // Check if user is authenticated
-            if (!auth.currentUser) {
+    if (!auth.currentUser) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Check if user's email is authorized
+    const userEmail = auth.currentUser.email;
+    if (!isUserAuthorized(userEmail)) {
+        alert(SECURITY_CONFIG.accessDeniedMessage);
+        auth.signOut().then(() => {
             window.location.href = 'login.html';
-            return;
-        }
+        });
+        return;
+    }
     
     // Initialize the application
     loadContacts();
