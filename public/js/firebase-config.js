@@ -18,15 +18,24 @@ const db = firebase.firestore();
 // Initialize Auth
 const auth = firebase.auth();
 
-// Enable offline persistence
-db.enablePersistence()
-    .catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code == 'unimplemented') {
-            console.log('The current browser does not support persistence.');
-        }
-    });
+// Try to enable offline persistence (optional feature)
+try {
+    db.enablePersistence()
+        .then(() => {
+            console.log('Offline persistence enabled successfully');
+        })
+        .catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code == 'unimplemented') {
+                console.log('The current browser does not support persistence.');
+            } else {
+                console.log('Persistence error:', err.message);
+            }
+        });
+} catch (error) {
+    console.log('Could not enable offline persistence:', error.message);
+}
 
 // Authentication state observer
 auth.onAuthStateChanged((user) => {
