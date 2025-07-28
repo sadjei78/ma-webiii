@@ -296,7 +296,7 @@ function showAddContactModal() {
     modal.show();
 }
 
-async function saveContact() {
+async function saveContactFromForm() {
     const formData = {
         name: document.getElementById('contactName').value,
         full_name: document.getElementById('contactFullName').value,
