@@ -1,3 +1,28 @@
+// Mobile viewport change detection
+let isMobileView = false;
+
+function checkMobileView() {
+    const wasMobile = isMobileView;
+    isMobileView = window.innerWidth <= 768;
+    
+    // If viewport changed from desktop to mobile, refresh dashboard
+    if (!wasMobile && isMobileView) {
+        console.log('Viewport changed to mobile, refreshing dashboard');
+        setTimeout(() => {
+            updateDashboard();
+        }, 100);
+    }
+}
+
+// Listen for viewport changes
+window.addEventListener('resize', checkMobileView);
+window.addEventListener('orientationchange', () => {
+    setTimeout(checkMobileView, 100);
+});
+
+// Check on page load
+document.addEventListener('DOMContentLoaded', checkMobileView);
+
 // Input sanitization function to prevent XSS
 function sanitizeInput(input) {
     if (typeof input !== 'string') return '';
@@ -243,6 +268,8 @@ function updateDashboard() {
     try {
         console.log('updateDashboard called');
         console.log('Mobile device:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+        console.log('Viewport width:', window.innerWidth);
+        console.log('Is mobile view:', isMobileView);
         
         // First, restore the original dashboard HTML structure
         const dashboardView = document.getElementById('dashboardView');
@@ -345,6 +372,12 @@ function updateDashboard() {
                 </div>
             `;
             console.log('Dashboard HTML structure restored');
+            
+            // Force a reflow for mobile devices
+            if (isMobileView) {
+                dashboardView.offsetHeight; // Force reflow
+                console.log('Forced reflow for mobile view');
+            }
         } else {
             console.log('Dashboard structure already exists, updating data only');
         }
@@ -386,6 +419,14 @@ function updateDashboard() {
         const recentElement = document.getElementById('recentContacts');
         if (recentElement) {
             recentElement.innerHTML = recentHtml || '<div class="list-group-item text-muted">No contacts yet</div>';
+        }
+        
+        // Force visibility on mobile
+        if (isMobileView) {
+            dashboardView.style.display = 'block';
+            dashboardView.style.visibility = 'visible';
+            dashboardView.style.opacity = '1';
+            console.log('Forced mobile visibility');
         }
         
         console.log('Dashboard update completed successfully');
