@@ -1,26 +1,18 @@
 // Security Configuration
-// Configure authorized email addresses here
+// This file is now a template - actual authorization is handled by Firebase
 
 const SECURITY_CONFIG = {
-    // Security mode: 'domain', 'email', or 'disabled'
-    // 'domain' = check email domains (requires server-side validation)
-    // 'email' = check specific email addresses (client-side check)
+    // Security mode: 'firebase' or 'disabled'
+    // 'firebase' = check Firebase Custom Claims for authorization
     // 'disabled' = no restrictions (anyone can sign up)
-    securityMode: 'email',
-    
-    // Authorized email addresses (add your allowed emails here)
-    authorizedEmails: [
-        'your-email@example.com',  // Replace with your email
-        'family-member@example.com', // Add family member emails
-        'trusted-person@example.com' // Add other trusted emails
-    ],
+    securityMode: 'firebase',
     
     // Custom error message
-    accessDeniedMessage: 'Access denied. Your email is not authorized to use this application. Please contact the administrator.'
+    accessDeniedMessage: 'Access denied. Your email is not authorized to use this application. Please contact an existing member to request access.'
 };
 
 // Function to check if user is authorized
-function isUserAuthorized(userEmail) {
+async function isUserAuthorized(userEmail) {
     if (!userEmail) return false;
     
     // Allow all users if security is disabled
@@ -28,15 +20,19 @@ function isUserAuthorized(userEmail) {
         return true;
     }
     
-    // Check specific email addresses
-    if (SECURITY_CONFIG.securityMode === 'email') {
-        return SECURITY_CONFIG.authorizedEmails.includes(userEmail.toLowerCase());
-    }
-    
-    // Check email domains (for future use)
-    if (SECURITY_CONFIG.securityMode === 'domain') {
-        const userDomain = userEmail.split('@')[1];
-        return SECURITY_CONFIG.authorizedDomains.includes(userDomain);
+    // Check Firebase Custom Claims for authorization
+    if (SECURITY_CONFIG.securityMode === 'firebase') {
+        try {
+            const user = firebase.auth().currentUser;
+            if (!user) return false;
+            
+            // Get user's custom claims from Firebase
+            const token = await user.getIdTokenResult();
+            return token.claims.authorized === true;
+        } catch (error) {
+            console.error('Error checking authorization:', error);
+            return false;
+        }
     }
     
     return false;

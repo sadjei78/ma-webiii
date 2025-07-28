@@ -72,170 +72,213 @@
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-address-book me-2"></i>
-                Mom's Contact Manager
-            </a>
-            <div class="navbar-nav me-auto">
-                <a class="nav-link" href="#" onclick="showDashboard()">
-                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+    <!-- App Content -->
+    <div id="appContent" style="display: none;">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="#" onclick="showDashboard()">
+                    <i class="fas fa-address-book me-2"></i>Mom's Contacts
                 </a>
-                <a class="nav-link active" href="#" onclick="showContacts()">
-                    <i class="fas fa-users me-1"></i>Contacts
-                </a>
-            </div>
-            <div class="navbar-nav ms-auto">
-                <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-2"></i><span id="userInfo">User</span>
+                <div class="navbar-nav me-auto">
+                    <a class="nav-link" href="#" onclick="showDashboard()">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#" onclick="signOut()">
-                            <i class="fas fa-sign-out-alt me-2"></i>Sign Out
-                        </a></li>
-                    </ul>
+                    <a class="nav-link" href="#" onclick="showContacts()">
+                        <i class="fas fa-users me-1"></i>All Contacts
+                    </a>
+                </div>
+                <div class="navbar-nav">
+                    <div class="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-2"></i><span id="userInfo">User</span>
+                        </a>
+                        <div class="dropdown-menu">
+                            <span class="dropdown-item-text">
+                                <i class="fas fa-user me-2"></i>
+                                <span id="userEmail">Loading...</span>
+                            </span>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" onclick="showManageUsersModal()" id="manageUsersBtn" style="display: none;">
+                                <i class="fas fa-users-cog me-2"></i>Manage Users
+                            </button>
+                            <button class="dropdown-item" onclick="signOut()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container mt-4">
+            <!-- Dashboard View -->
+            <div id="dashboardView">
+                <div class="row">
+                    <div class="col-12">
+                        <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+                        <p class="text-muted">Overview of your contact management system</p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('all')">
+                            <div class="card-body">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h5 class="card-title">Total Contacts</h5>
+                                <h3 class="text-primary" id="totalContacts">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('important')">
+                            <div class="card-body">
+                                <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                                <h5 class="card-title">Important</h5>
+                                <h3 class="text-warning" id="importantContacts">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('active')">
+                            <div class="card-body">
+                                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                                <h5 class="card-title">Active</h5>
+                                <h3 class="text-success" id="activeContacts">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center clickable-card" onclick="showFilteredContacts('categories')">
+                            <div class="card-body">
+                                <i class="fas fa-tags fa-2x text-info mb-2"></i>
+                                <h5 class="card-title">Categories</h5>
+                                <h3 class="text-info" id="categoriesCount">0</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-clock me-2"></i>Recent Contacts</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentContacts" class="list-group">
+                                    <!-- Recent contacts will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Quick Actions</h4>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="showAddContactModal()">
+                                <i class="fas fa-plus me-2"></i>Add New Contact
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="exportContacts()">
+                                <i class="fas fa-download me-2"></i>Export Contacts
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="showContacts()">
+                                <i class="fas fa-users me-2"></i>View All Contacts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts View -->
+            <div id="contactsView" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-users me-2"></i>All Contacts</h2>
+                    <div>
+                        <button class="btn btn-primary me-2" onclick="showAddContactModal()">
+                            <i class="fas fa-plus me-2"></i>Add Contact
+                        </button>
+                        <button class="btn btn-outline-secondary me-2" onclick="showManageCategoriesModal()">
+                            <i class="fas fa-tags me-2"></i>Manage Categories
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="exportContacts()">
+                            <i class="fas fa-download me-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <select class="form-select" id="categoryFilter" onchange="filterContacts()">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search contacts..." onkeyup="filterContacts()">
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="importantFilter" onchange="filterContacts()">
+                            <label class="form-check-label" for="importantFilter">
+                                Important Only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="showArchived" onchange="filterContacts()">
+                            <label class="form-check-label" for="showArchived">
+                                Show Archived
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div id="bulkActions" class="mb-3" style="display: none;">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Bulk Actions</h6>
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="bulkEmail()">
+                                <i class="fas fa-envelope me-1"></i>Email Selected
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2" onclick="bulkUpdateCategories()">
+                                <i class="fas fa-tags me-1"></i>Update Categories
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning me-2" onclick="bulkUpdateStatus()">
+                                <i class="fas fa-star me-1"></i>Update Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contacts Grid -->
+                <div id="contactsGrid" class="row">
+                    <!-- Contacts will be loaded here -->
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Main Content -->
-    <div class="container mt-4">
-        <!-- Dashboard View -->
-        <div id="dashboardView">
-            <div class="row">
-                <div class="col-md-8">
-                    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
-                    <div class="row mt-4">
-                        <div class="col-md-3">
-                            <div class="card text-center clickable-card" onclick="showFilteredContacts('all')" style="cursor: pointer;">
-                                <div class="card-body">
-                                    <h3 id="totalContacts">0</h3>
-                                    <p class="text-muted">Total Contacts</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center clickable-card" onclick="showFilteredContacts('important')" style="cursor: pointer;">
-                                <div class="card-body">
-                                    <h3 id="importantContacts">0</h3>
-                                    <p class="text-muted">Important</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center clickable-card" onclick="showFilteredContacts('active')" style="cursor: pointer;">
-                                <div class="card-body">
-                                    <h3 id="activeContacts">0</h3>
-                                    <p class="text-muted">Active</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card text-center clickable-card" onclick="showFilteredContacts('categories')" style="cursor: pointer;">
-                                <div class="card-body">
-                                    <h3 id="categoriesCount">0</h3>
-                                    <p class="text-muted">Categories</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <h4>Recent Contacts</h4>
-                            <div id="recentContacts" class="list-group">
-                                <!-- Recent contacts will be loaded here -->
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h4>Quick Actions</h4>
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-primary" onclick="showAddContactModal()">
-                                    <i class="fas fa-plus me-2"></i>Add New Contact
-                                </button>
-                                <button class="btn btn-outline-primary" onclick="exportContacts()">
-                                    <i class="fas fa-download me-2"></i>Export Contacts
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="showContacts()">
-                                    <i class="fas fa-users me-2"></i>View All Contacts
-                                </button>
-                            </div>
+    <!-- Access Denied View -->
+    <div id="accessDenied" style="display: none;">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
+                    <div class="card">
+                        <div class="card-body">
+                            <i class="fas fa-lock fa-3x text-danger mb-3"></i>
+                            <h3>Access Denied</h3>
+                            <p class="text-muted">Your email address is not authorized to access this application.</p>
+                            <p class="text-muted">Please contact an existing member to request access.</p>
+                            <button class="btn btn-primary" onclick="signOut()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Contacts View -->
-        <div id="contactsView" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-users me-2"></i>All Contacts</h2>
-                <div>
-                    <button class="btn btn-primary me-2" onclick="showAddContactModal()">
-                        <i class="fas fa-plus me-2"></i>Add Contact
-                    </button>
-                    <button class="btn btn-outline-secondary me-2" onclick="showManageCategoriesModal()">
-                        <i class="fas fa-tags me-2"></i>Manage Categories
-                    </button>
-                    <button class="btn btn-outline-primary" onclick="exportContacts()">
-                        <i class="fas fa-download me-2"></i>Export
-                    </button>
-                </div>
-            </div>
-
-            <!-- Filters -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <select class="form-select" id="categoryFilter" onchange="filterContacts()">
-                        <option value="">All Categories</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search contacts..." onkeyup="filterContacts()">
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="importantFilter" onchange="filterContacts()">
-                        <label class="form-check-label" for="importantFilter">
-                            Important Only
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="showArchived" onchange="filterContacts()">
-                        <label class="form-check-label" for="showArchived">
-                            Show Archived
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bulk Actions -->
-            <div id="bulkActions" class="mb-3" style="display: none;">
-                <div class="card">
-                    <div class="card-body">
-                        <h6>Bulk Actions</h6>
-                        <button class="btn btn-sm btn-outline-primary me-2" onclick="bulkEmail()">
-                            <i class="fas fa-envelope me-1"></i>Email Selected
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary me-2" onclick="bulkUpdateCategories()">
-                            <i class="fas fa-tags me-1"></i>Update Categories
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-2" onclick="bulkUpdateStatus()">
-                            <i class="fas fa-star me-1"></i>Update Status
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contacts Grid -->
-            <div id="contactsGrid" class="row">
-                <!-- Contacts will be loaded here -->
             </div>
         </div>
     </div>
@@ -446,6 +489,38 @@
                         <label class="form-label">Existing Categories</label>
                         <div id="existingCategories" class="list-group">
                             <!-- Categories will be listed here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Users Modal -->
+    <div class="modal fade" id="manageUsersModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Authorized Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Add New Authorized User</label>
+                        <div class="input-group">
+                            <input type="email" class="form-control" id="newUserEmail" placeholder="Enter email address">
+                            <button type="button" class="btn btn-primary" onclick="addAuthorizedUser()">
+                                <i class="fas fa-plus me-1"></i>Add User
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Authorized Users</label>
+                        <div id="authorizedUsersList" class="list-group">
+                            <!-- Users will be listed here -->
                         </div>
                     </div>
                 </div>

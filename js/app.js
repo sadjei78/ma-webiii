@@ -3,32 +3,52 @@ let allContacts = [];
 let allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare', 'Services'];
 
 // Check authentication before loading app
-window.loadApp = function() {
+window.loadApp = async function() {
     // Check if user is authenticated
     if (!auth.currentUser) {
         window.location.href = 'login.html';
         return;
     }
     
-    // Check if user's email is authorized
-    const userEmail = auth.currentUser.email;
-    if (!isUserAuthorized(userEmail)) {
-        alert(SECURITY_CONFIG.accessDeniedMessage);
+    // Check if user is authorized using Firebase Functions
+    try {
+        const checkAuthFunction = firebase.functions().httpsCallable('checkAuthorization');
+        const result = await checkAuthFunction();
+        
+        if (!result.data.authorized) {
+            alert(SECURITY_CONFIG.accessDeniedMessage);
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+            return;
+        }
+        
+        // User is authorized - show app content
+        document.getElementById('appContent').style.display = 'block';
+        document.getElementById('accessDenied').style.display = 'none';
+        
+        // Show user management button for authorized users
+        document.getElementById('manageUsersBtn').style.display = 'block';
+        
+        // Load user email
+        const user = firebase.auth().currentUser;
+        if (user) {
+            document.getElementById('userEmail').textContent = user.email;
+        }
+        
+        // Load data
+        await loadCategories();
+        await loadContacts();
+        
+        // Show dashboard by default
+        showDashboard();
+        
+    } catch (error) {
+        console.error('Error checking authorization:', error);
+        alert('Error checking authorization. Please try again.');
         auth.signOut().then(() => {
             window.location.href = 'login.html';
         });
-        return;
-    }
-    
-    // Initialize the application
-    loadContacts();
-    loadCategories();
-    showDashboard();
-    
-    // Show user info
-    const userInfo = document.getElementById('userInfo');
-    if (userInfo) {
-        userInfo.textContent = auth.currentUser.email;
     }
 };
 
@@ -1059,5 +1079,87 @@ async function deleteCategory(categoryId, categoryName) {
     } catch (error) {
         console.error('Error deleting category:', error);
         alert('Error deleting category. Please try again.');
+    }
+} 
+
+// User Management Functions
+function showManageUsersModal() {
+    loadAuthorizedUsers();
+    const modal = new bootstrap.Modal(document.getElementById('manageUsersModal'));
+    modal.show();
+}
+
+async function loadAuthorizedUsers() {
+    try {
+        const listUsersFunction = firebase.functions().httpsCallable('listAuthorizedUsers');
+        const result = await listUsersFunction();
+        
+        const users = result.data.authorizedUsers;
+        const container = document.getElementById('authorizedUsersList');
+        
+        if (users.length === 0) {
+            container.innerHTML = '<p class="text-muted">No authorized users found.</p>';
+        } else {
+            container.innerHTML = users.map(email => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${email}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeAuthorizedUser('${email}')" ${users.length === 1 ? 'disabled' : ''}>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading authorized users:', error);
+        document.getElementById('authorizedUsersList').innerHTML = '<p class="text-danger">Error loading users. You may not have permission.</p>';
+    }
+}
+
+async function addAuthorizedUser() {
+    const email = document.getElementById('newUserEmail').value.trim();
+    
+    if (!email) {
+        alert('Please enter an email address.');
+        return;
+    }
+    
+    if (!email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    
+    try {
+        const addUserFunction = firebase.functions().httpsCallable('addAuthorizedUser');
+        const result = await addUserFunction({ email: email });
+        
+        // Clear input
+        document.getElementById('newUserEmail').value = '';
+        
+        // Reload users
+        await loadAuthorizedUsers();
+        
+        alert(result.data.message);
+    } catch (error) {
+        console.error('Error adding user:', error);
+        alert('Error adding user: ' + (error.message || 'Unknown error'));
+    }
+}
+
+async function removeAuthorizedUser(email) {
+    if (!confirm(`Are you sure you want to remove ${email} from authorized users?`)) {
+        return;
+    }
+    
+    try {
+        const removeUserFunction = firebase.functions().httpsCallable('removeAuthorizedUser');
+        const result = await removeUserFunction({ email: email });
+        
+        // Reload users
+        await loadAuthorizedUsers();
+        
+        alert(result.data.message);
+    } catch (error) {
+        console.error('Error removing user:', error);
+        alert('Error removing user: ' + (error.message || 'Unknown error'));
     }
 } 
