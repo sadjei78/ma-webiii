@@ -35,7 +35,7 @@ window.loadApp = function() {
 // Show login function (for Firebase config)
 window.showLogin = function() {
     // If we're not already on the login page, redirect
-    if (window.location.pathname !== '/login.html') {
+    if (!window.location.pathname.includes('login.html')) {
         window.location.href = 'login.html';
     }
 };

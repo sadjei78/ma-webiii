@@ -196,14 +196,14 @@
         
         window.showLogin = function() {
             // If we're not already on the login page, redirect
-            if (window.location.pathname !== '/login.html') {
+            if (!window.location.pathname.includes('login.html')) {
                 window.location.href = 'login.html';
             }
         };
         
         window.loadApp = function() {
             // Redirect to main app if user is authenticated
-            if (window.location.pathname === '/login.html') {
+            if (window.location.pathname.includes('login.html')) {
                 window.location.href = './';
             }
         };
