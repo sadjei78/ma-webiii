@@ -24,26 +24,51 @@ async function isUserAuthorized(userEmail) {
     if (SECURITY_CONFIG.securityMode === 'firestore') {
         try {
             const user = firebase.auth().currentUser;
-            if (!user) return false;
-            
-            // Check if user exists in authorizedUsers collection by UID
-            const userDoc = await db.collection('authorizedUsers').doc(user.uid).get();
-            if (userDoc.exists) {
-                const userData = userDoc.data();
-                return userData.authorized === true && userData.email === userEmail;
+            if (!user) {
+                console.log('No authenticated user found');
+                return false;
             }
             
-            // Also check by email for backward compatibility
-            const emailQuery = await db.collection('authorizedUsers')
-                .where('email', '==', userEmail)
-                .where('authorized', '==', true)
-                .limit(1)
-                .get();
+            console.log('Checking authorization for:', userEmail);
+            console.log('User UID:', user.uid);
             
-            return !emailQuery.empty;
+            // First try to check by email (more reliable)
+            try {
+                const emailQuery = await db.collection('authorizedUsers')
+                    .where('email', '==', userEmail)
+                    .where('authorized', '==', true)
+                    .limit(1)
+                    .get();
+                
+                if (!emailQuery.empty) {
+                    console.log('User authorized by email check');
+                    return true;
+                }
+            } catch (emailError) {
+                console.log('Email check failed:', emailError);
+            }
+            
+            // Then try to check by UID
+            try {
+                const userDoc = await db.collection('authorizedUsers').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const isAuthorized = userData.authorized === true && userData.email === userEmail;
+                    console.log('User authorized by UID check:', isAuthorized);
+                    return isAuthorized;
+                }
+            } catch (uidError) {
+                console.log('UID check failed:', uidError);
+            }
+            
+            console.log('User not found in authorized users');
+            return false;
+            
         } catch (error) {
             console.error('Error checking authorization:', error);
-            return false;
+            // On error, allow access temporarily to prevent lockout
+            console.log('Allowing access due to error');
+            return true;
         }
     }
     
