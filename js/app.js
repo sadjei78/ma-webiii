@@ -72,9 +72,13 @@ async function loadCategories() {
         const snapshot = await db.collection('categories').get();
         const categories = snapshot.docs.map(doc => doc.data().name);
         allCategories = ['Uncategorized', ...categories];
+        console.log('Loaded categories:', allCategories); // Debug log
         updateCategoryFilters();
     } catch (error) {
         console.error('Error loading categories:', error);
+        // Fallback to default categories if loading fails
+        allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare', 'Services'];
+        updateCategoryFilters();
     }
 }
 
@@ -287,8 +291,14 @@ function updateCategoryFilters() {
         options.push(`<option value="${category}">${category}</option>`);
     });
     
-    if (categorySelect) categorySelect.innerHTML = options.join('');
-    if (contactCategory) contactCategory.innerHTML = options.join('');
+    if (categorySelect) {
+        categorySelect.innerHTML = options.join('');
+        console.log('Updated category filter dropdown'); // Debug log
+    }
+    if (contactCategory) {
+        contactCategory.innerHTML = options.join('');
+        console.log('Updated contact category dropdown'); // Debug log
+    }
 }
 
 function updateBulkActions() {
@@ -934,7 +944,120 @@ function updateCategoryFilters() {
         options.push(`<option value="${category}">${category}</option>`);
     });
     
-    if (categorySelect) categorySelect.innerHTML = options.join('');
-    if (contactCategory) contactCategory.innerHTML = options.join('');
-    if (editContactCategory) editContactCategory.innerHTML = options.join('');
+    if (categorySelect) {
+        categorySelect.innerHTML = options.join('');
+        console.log('Updated category filter dropdown'); // Debug log
+    }
+    if (contactCategory) {
+        contactCategory.innerHTML = options.join('');
+        console.log('Updated contact category dropdown'); // Debug log
+    }
+    if (editContactCategory) {
+        editContactCategory.innerHTML = options.join('');
+        console.log('Updated edit contact category dropdown'); // Debug log
+    }
+} 
+
+// Category Management Functions
+function showManageCategoriesModal() {
+    loadExistingCategories();
+    const modal = new bootstrap.Modal(document.getElementById('manageCategoriesModal'));
+    modal.show();
+}
+
+async function loadExistingCategories() {
+    try {
+        const snapshot = await db.collection('categories').get();
+        const categories = snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            created_date: doc.data().created_date
+        }));
+        
+        const container = document.getElementById('existingCategories');
+        if (categories.length === 0) {
+            container.innerHTML = '<p class="text-muted">No custom categories yet. Add your first category above!</p>';
+        } else {
+            container.innerHTML = categories.map(cat => `
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${cat.name}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${cat.id}', '${cat.name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        document.getElementById('existingCategories').innerHTML = '<p class="text-danger">Error loading categories.</p>';
+    }
+}
+
+async function addNewCategory() {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    
+    if (!categoryName) {
+        alert('Please enter a category name.');
+        return;
+    }
+    
+    if (allCategories.includes(categoryName)) {
+        alert('This category already exists.');
+        return;
+    }
+    
+    try {
+        await db.collection('categories').add({
+            name: categoryName,
+            created_date: new Date().toISOString()
+        });
+        
+        // Clear input
+        document.getElementById('newCategoryName').value = '';
+        
+        // Reload categories
+        await loadCategories();
+        await loadExistingCategories();
+        
+        alert('Category added successfully!');
+    } catch (error) {
+        console.error('Error adding category:', error);
+        alert('Error adding category. Please try again.');
+    }
+}
+
+async function deleteCategory(categoryId, categoryName) {
+    if (!confirm(`Are you sure you want to delete the category "${categoryName}"? This will remove it from all contacts.`)) {
+        return;
+    }
+    
+    try {
+        // Delete the category
+        await db.collection('categories').doc(categoryId).delete();
+        
+        // Update contacts that use this category
+        const contactsToUpdate = allContacts.filter(contact => {
+            const categories = Array.isArray(contact.categories) ? contact.categories : [contact.category];
+            return categories.includes(categoryName);
+        });
+        
+        for (const contact of contactsToUpdate) {
+            const categories = Array.isArray(contact.categories) ? contact.categories : [contact.category];
+            const updatedCategories = categories.filter(cat => cat !== categoryName);
+            
+            await db.collection('contacts').doc(contact.id).update({
+                categories: updatedCategories.length > 0 ? updatedCategories : ['Uncategorized']
+            });
+        }
+        
+        // Reload everything
+        await loadCategories();
+        await loadExistingCategories();
+        await loadContacts();
+        
+        alert(`Category "${categoryName}" deleted successfully!`);
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('Error deleting category. Please try again.');
+    }
 } 
