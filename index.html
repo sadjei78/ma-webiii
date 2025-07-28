@@ -609,6 +609,16 @@
                             <!-- Users will be listed here -->
                         </div>
                     </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Primary Admin Protection:</strong> The sam@adjeifamily.com account cannot be deleted and is marked as "Primary Admin".
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-warning" onclick="cleanupUnauthorizedUsers()">
+                            <i class="fas fa-broom me-2"></i>Clean Up Old Users
+                        </button>
+                        <small class="text-muted">This removes unauthorized users that were added before security was properly configured.</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

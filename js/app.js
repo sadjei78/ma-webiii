@@ -1116,9 +1116,10 @@ async function loadAuthorizedUsers() {
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <span>${user.email}</span>
+                        ${user.email === 'sam@adjeifamily.com' ? '<span class="badge bg-primary ms-2">Primary Admin</span>' : ''}
                         ${user.addedBy ? `<small class="text-muted d-block">Added by: ${user.addedBy}</small>` : ''}
                     </div>
-                    <button class="btn btn-sm btn-outline-danger" onclick="removeAuthorizedUser('${user.id}', '${user.email}')" ${users.length === 1 ? 'disabled' : ''}>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeAuthorizedUser('${user.id}', '${user.email}')" ${users.length === 1 ? 'disabled' : ''} ${user.email === 'sam@adjeifamily.com' ? 'disabled' : ''}>
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1184,7 +1185,13 @@ async function addAuthorizedUser() {
 }
 
 async function removeAuthorizedUser(userId, email) {
-    if (!confirm(`Are you sure you want to remove ${email} from authorized users?`)) {
+    // Protect primary admin account
+    if (email === 'sam@adjeifamily.com') {
+        alert('Cannot remove the primary admin account (sam@adjeifamily.com). This account is protected.');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to remove ${email} from authorized users?\n\nThis will require them to go through the registration process again if they try to log in.`)) {
         return;
     }
     
@@ -1205,9 +1212,38 @@ async function removeAuthorizedUser(userId, email) {
         // Reload users
         await loadAuthorizedUsers();
         
-        alert(`User ${email} has been removed from authorized users.`);
+        alert(`User ${email} has been removed from authorized users.\n\nThey will need to be re-authorized if they try to log in again.`);
     } catch (error) {
         console.error('Error removing user:', error);
         alert('Error removing user: ' + (error.message || 'Unknown error'));
+    }
+}
+
+async function cleanupUnauthorizedUsers() {
+    if (!confirm('This will remove all unauthorized users from the system.\n\nThis is useful to clean up old accounts that were added before security was properly configured.\n\nAre you sure you want to proceed?')) {
+        return;
+    }
+    
+    try {
+        // Get all users in the authorizedUsers collection
+        const allUsers = await db.collection('authorizedUsers').get();
+        let removedCount = 0;
+        
+        // Remove users that are not authorized
+        for (const doc of allUsers.docs) {
+            const userData = doc.data();
+            if (!userData.authorized || userData.authorized !== true) {
+                await doc.ref.delete();
+                removedCount++;
+            }
+        }
+        
+        // Reload users
+        await loadAuthorizedUsers();
+        
+        alert(`Cleanup completed!\n\nRemoved ${removedCount} unauthorized users from the system.`);
+    } catch (error) {
+        console.error('Error cleaning up users:', error);
+        alert('Error cleaning up users: ' + (error.message || 'Unknown error'));
     }
 } 

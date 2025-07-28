@@ -26,10 +26,11 @@ async function isUserAuthorized(userEmail) {
             const user = firebase.auth().currentUser;
             if (!user) return false;
             
-            // Check if user exists in authorizedUsers collection
+            // Check if user exists in authorizedUsers collection by UID
             const userDoc = await db.collection('authorizedUsers').doc(user.uid).get();
             if (userDoc.exists) {
-                return userDoc.data().authorized === true;
+                const userData = userDoc.data();
+                return userData.authorized === true && userData.email === userEmail;
             }
             
             // Also check by email for backward compatibility
