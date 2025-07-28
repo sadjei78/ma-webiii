@@ -62,6 +62,9 @@ categories.json
 *.json.bak
 *.corrupted.*
 
+# Security configuration (contains private user lists)
+public/js/security-config.js
+
 # Logs
 *.log
 logs/
