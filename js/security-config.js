@@ -5,7 +5,7 @@ const SECURITY_CONFIG = {
     // Security mode: 'firestore' or 'disabled'
     // 'firestore' = check authorized users in Firestore collection
     // 'disabled' = no restrictions (anyone can sign up)
-    securityMode: 'disabled', // Temporarily disabled for initial setup
+    securityMode: 'firestore', // Re-enabled now that user is added
     
     // Custom error message
     accessDeniedMessage: 'Access denied. Your email is not authorized to use this application. Please contact an existing member to request access.'
