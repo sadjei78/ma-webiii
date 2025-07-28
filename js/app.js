@@ -116,12 +116,26 @@ async function deleteContact(contactId) {
 }
 
 async function addCategory(categoryName) {
+    if (!categoryName.trim()) {
+        alert('Please enter a category name.');
+        return;
+    }
+    
+    if (allCategories.includes(categoryName)) {
+        alert('This category already exists.');
+        return;
+    }
+    
     try {
         await db.collection('categories').add({
-            name: categoryName,
+            name: categoryName.trim(),
             created_date: new Date().toISOString()
         });
+        
+        // Reload categories to update dropdowns
         await loadCategories();
+        
+        alert('Category added successfully!');
     } catch (error) {
         console.error('Error adding category:', error);
         alert('Error adding category. Please try again.');
@@ -206,22 +220,33 @@ function createContactCard(contact) {
     const importantClass = contact.important ? 'important-contact' : '';
     const archivedClass = contact.archived ? 'archived-contact' : '';
     
+    // Check for duplicates
+    const duplicates = findDuplicates(contact);
+    const duplicateBadge = duplicates.length > 0 ? 
+        `<span class="duplicate-badge">${duplicates.length} duplicate${duplicates.length > 1 ? 's' : ''}</span>` : '';
+    
+    // Handle multiple categories
+    const categories = Array.isArray(contact.categories) ? contact.categories : [contact.category || 'Uncategorized'];
+    const categoryBadges = categories.map(cat => 
+        `<span class="category-badge">${cat}</span>`
+    ).join('');
+    
     return `
         <div class="col-md-6 col-lg-4 mb-3">
-            <div class="card contact-card ${importantClass} ${archivedClass}">
+            <div class="card contact-card ${importantClass} ${archivedClass}" onclick="showContactDetail('${contact.id}')">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
-                            <h5 class="card-title">${contact.name}</h5>
+                            <h5 class="card-title">${contact.name} ${duplicateBadge}</h5>
                             ${contact.full_name ? `<p class="text-muted mb-1">${contact.full_name}</p>` : ''}
                             ${contact.organization ? `<p class="text-muted mb-1"><i class="fas fa-building me-1"></i>${contact.organization}</p>` : ''}
                             ${contact.phone_numbers?.length ? `<p class="mb-1"><i class="fas fa-phone me-1"></i>${contact.phone_numbers[0].display}</p>` : ''}
                             ${contact.emails?.length ? `<p class="mb-1"><i class="fas fa-envelope me-1"></i>${contact.emails[0]}</p>` : ''}
-                            <span class="badge bg-secondary">${contact.category || 'Uncategorized'}</span>
+                            <div class="mt-2">${categoryBadges}</div>
                             ${contact.important ? '<span class="badge bg-warning ms-1"><i class="fas fa-star"></i></span>' : ''}
                             ${contact.archived ? '<span class="badge bg-secondary ms-1">Archived</span>' : ''}
                         </div>
-                        <div class="dropdown">
+                        <div class="dropdown" onclick="event.stopPropagation()">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
@@ -233,6 +258,9 @@ function createContactCard(contact) {
                                 <li><a class="dropdown-item" href="#" onclick="toggleArchived('${contact.id}')">
                                     <i class="fas fa-archive me-2"></i>${contact.archived ? 'Unarchive' : 'Archive'}
                                 </a></li>
+                                ${duplicates.length > 0 ? `<li><a class="dropdown-item" href="#" onclick="showMergeDuplicates('${contact.id}')">
+                                    <i class="fas fa-compress-alt me-2"></i>Merge Duplicates
+                                </a></li>` : ''}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="#" onclick="deleteContact('${contact.id}')">
                                     <i class="fas fa-trash me-2"></i>Delete
@@ -240,7 +268,7 @@ function createContactCard(contact) {
                             </ul>
                         </div>
                     </div>
-                    <div class="mt-2">
+                    <div class="mt-2" onclick="event.stopPropagation()">
                         <input type="checkbox" class="form-check-input contact-checkbox" value="${contact.id}" onchange="updateBulkActions()">
                         <label class="form-check-label ms-1">Select for bulk action</label>
                     </div>
@@ -297,11 +325,13 @@ function showAddContactModal() {
 }
 
 async function saveContactFromForm() {
+    const categories = getSelectedCategories();
+    
     const formData = {
         name: document.getElementById('contactName').value,
         full_name: document.getElementById('contactFullName').value,
         organization: document.getElementById('contactOrganization').value,
-        category: document.getElementById('contactCategory').value,
+        categories: categories.length > 0 ? categories : ['Uncategorized'],
         notes: document.getElementById('contactNotes').value,
         important: document.getElementById('contactImportant').checked,
         archived: false,
@@ -451,15 +481,15 @@ function editContact(contactId) {
     const contact = allContacts.find(c => c.id === contactId);
     if (contact) {
         // Populate form with contact data
-        document.getElementById('contactName').value = contact.name;
-        document.getElementById('contactFullName').value = contact.full_name || '';
-        document.getElementById('contactOrganization').value = contact.organization || '';
-        document.getElementById('contactCategory').value = contact.category || 'Uncategorized';
-        document.getElementById('contactNotes').value = contact.notes || '';
-        document.getElementById('contactImportant').checked = contact.important || false;
+        document.getElementById('editContactId').value = contact.id;
+        document.getElementById('editContactName').value = contact.name;
+        document.getElementById('editContactFullName').value = contact.full_name || '';
+        document.getElementById('editContactOrganization').value = contact.organization || '';
+        document.getElementById('editContactNotes').value = contact.notes || '';
+        document.getElementById('editContactImportant').checked = contact.important || false;
         
         // Set phone numbers
-        const phoneContainer = document.getElementById('phoneNumbers');
+        const phoneContainer = document.getElementById('editPhoneNumbers');
         phoneContainer.innerHTML = '';
         if (contact.phone_numbers?.length) {
             contact.phone_numbers.forEach((phone, index) => {
@@ -467,23 +497,23 @@ function editContact(contactId) {
                     phoneContainer.innerHTML = `
                         <div class="input-group mb-2">
                             <input type="tel" class="form-control" value="${phone.display}">
-                            <button type="button" class="btn btn-outline-secondary" onclick="addPhoneField()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="addEditPhoneField()">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     `;
                 } else {
-                    addPhoneField();
+                    addEditPhoneField();
                     const inputs = phoneContainer.querySelectorAll('input[type="tel"]');
                     inputs[inputs.length - 1].value = phone.display;
                 }
             });
         } else {
-            addPhoneField();
+            addEditPhoneField();
         }
 
         // Set email addresses
-        const emailContainer = document.getElementById('emailAddresses');
+        const emailContainer = document.getElementById('editEmailAddresses');
         emailContainer.innerHTML = '';
         if (contact.emails?.length) {
             contact.emails.forEach((email, index) => {
@@ -491,27 +521,143 @@ function editContact(contactId) {
                     emailContainer.innerHTML = `
                         <div class="input-group mb-2">
                             <input type="email" class="form-control" value="${email}">
-                            <button type="button" class="btn btn-outline-secondary" onclick="addEmailField()">
+                            <button type="button" class="btn btn-outline-secondary" onclick="addEditEmailField()">
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
                     `;
                 } else {
-                    addEmailField();
+                    addEditEmailField();
                     const inputs = emailContainer.querySelectorAll('input[type="email"]');
                     inputs[inputs.length - 1].value = email;
                 }
             });
         } else {
-            addEmailField();
+            addEditEmailField();
         }
 
-        // Store contact ID for update
-        document.getElementById('addContactForm').dataset.contactId = contact.id;
+        // Set categories
+        const categories = Array.isArray(contact.categories) ? contact.categories : [contact.category || 'Uncategorized'];
+        const categoryContainer = document.getElementById('editContactCategories');
+        categoryContainer.innerHTML = '';
+        categories.forEach((category, index) => {
+            if (index === 0) {
+                categoryContainer.innerHTML = `
+                    <div class="input-group mb-2">
+                        <select class="form-select">
+                            <option value="">Select category...</option>
+                            ${allCategories.map(cat => `<option value="${cat}" ${cat === category ? 'selected' : ''}>${cat}</option>`).join('')}
+                        </select>
+                        <button type="button" class="btn btn-outline-secondary" onclick="addEditCategoryField()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                addEditCategoryField();
+                const selects = categoryContainer.querySelectorAll('select');
+                selects[selects.length - 1].value = category;
+            }
+        });
         
-        const modal = new bootstrap.Modal(document.getElementById('addContactModal'));
+        const modal = new bootstrap.Modal(document.getElementById('editContactModal'));
         modal.show();
     }
+}
+
+async function saveEditedContact() {
+    const contactId = document.getElementById('editContactId').value;
+    const categories = getSelectedEditCategories();
+    
+    const formData = {
+        id: contactId,
+        name: document.getElementById('editContactName').value,
+        full_name: document.getElementById('editContactFullName').value,
+        organization: document.getElementById('editContactOrganization').value,
+        categories: categories.length > 0 ? categories : ['Uncategorized'],
+        notes: document.getElementById('editContactNotes').value,
+        important: document.getElementById('editContactImportant').checked,
+        phone_numbers: getEditPhoneNumbers(),
+        emails: getEditEmailAddresses()
+    };
+
+    if (!formData.name) {
+        alert('Please enter a name for the contact.');
+        return;
+    }
+
+    const success = await saveContact(formData);
+    if (success) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editContactModal'));
+        modal.hide();
+    }
+}
+
+function getEditPhoneNumbers() {
+    const phoneInputs = document.querySelectorAll('#editPhoneNumbers input[type="tel"]');
+    return Array.from(phoneInputs)
+        .map(input => input.value.trim())
+        .filter(value => value)
+        .map(number => ({
+            number: number.replace(/\D/g, ''),
+            display: number
+        }));
+}
+
+function getEditEmailAddresses() {
+    const emailInputs = document.querySelectorAll('#editEmailAddresses input[type="email"]');
+    return Array.from(emailInputs)
+        .map(input => input.value.trim())
+        .filter(value => value);
+}
+
+function getSelectedEditCategories() {
+    const categorySelects = document.querySelectorAll('#editContactCategories select');
+    return Array.from(categorySelects)
+        .map(select => select.value)
+        .filter(value => value && value !== 'Uncategorized');
+}
+
+function addEditPhoneField() {
+    const container = document.getElementById('editPhoneNumbers');
+    const newField = document.createElement('div');
+    newField.className = 'input-group mb-2';
+    newField.innerHTML = `
+        <input type="tel" class="form-control" placeholder="Phone number">
+        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(newField);
+}
+
+function addEditEmailField() {
+    const container = document.getElementById('editEmailAddresses');
+    const newField = document.createElement('div');
+    newField.className = 'input-group mb-2';
+    newField.innerHTML = `
+        <input type="email" class="form-control" placeholder="Email address">
+        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(newField);
+}
+
+function addEditCategoryField() {
+    const container = document.getElementById('editContactCategories');
+    const newField = document.createElement('div');
+    newField.className = 'input-group mb-2';
+    newField.innerHTML = `
+        <select class="form-select">
+            <option value="">Select category...</option>
+            ${allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+        </select>
+        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    container.appendChild(newField);
 }
 
 function exportContacts() {
@@ -542,4 +688,253 @@ function generateCSV(contacts) {
     return [headers, ...rows].map(row => 
         row.map(field => `"${field.replace(/"/g, '""')}"`).join(',')
     ).join('\n');
+} 
+
+// Contact Detail Functions
+function showContactDetail(contactId) {
+    const contact = allContacts.find(c => c.id === contactId);
+    if (!contact) return;
+    
+    const categories = Array.isArray(contact.categories) ? contact.categories : [contact.category || 'Uncategorized'];
+    const categoryBadges = categories.map(cat => 
+        `<span class="category-badge">${cat}</span>`
+    ).join('');
+    
+    const phoneNumbers = contact.phone_numbers?.map(phone => 
+        `<p class="mb-1"><i class="fas fa-phone me-1"></i>${phone.display}</p>`
+    ).join('') || '<p class="text-muted mb-1">No phone numbers</p>';
+    
+    const emails = contact.emails?.map(email => 
+        `<p class="mb-1"><i class="fas fa-envelope me-1"></i>${email}</p>`
+    ).join('') || '<p class="text-muted mb-1">No email addresses</p>';
+    
+    const duplicates = findDuplicates(contact);
+    const duplicateInfo = duplicates.length > 0 ? 
+        `<div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            This contact has ${duplicates.length} potential duplicate${duplicates.length > 1 ? 's' : ''}.
+            <button class="btn btn-sm btn-warning ms-2" onclick="showMergeDuplicates('${contact.id}')">
+                <i class="fas fa-compress-alt me-1"></i>Merge Duplicates
+            </button>
+        </div>` : '';
+    
+    document.getElementById('detailModalTitle').textContent = contact.name;
+    document.getElementById('contactDetailContent').innerHTML = `
+        ${duplicateInfo}
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Basic Information</h6>
+                <p><strong>Name:</strong> ${contact.name}</p>
+                ${contact.full_name ? `<p><strong>Full Name:</strong> ${contact.full_name}</p>` : ''}
+                ${contact.organization ? `<p><strong>Organization:</strong> ${contact.organization}</p>` : ''}
+                <p><strong>Categories:</strong> ${categoryBadges}</p>
+                <p><strong>Status:</strong> 
+                    ${contact.important ? '<span class="badge bg-warning">Important</span>' : ''}
+                    ${contact.archived ? '<span class="badge bg-secondary">Archived</span>' : ''}
+                    ${!contact.important && !contact.archived ? '<span class="badge bg-success">Active</span>' : ''}
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6>Contact Information</h6>
+                ${phoneNumbers}
+                ${emails}
+            </div>
+        </div>
+        ${contact.notes ? `
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Notes</h6>
+                <p>${contact.notes}</p>
+            </div>
+        </div>
+        ` : ''}
+        <div class="row mt-3">
+            <div class="col-12">
+                <h6>Timestamps</h6>
+                <p><strong>Created:</strong> ${new Date(contact.created_date).toLocaleString()}</p>
+                <p><strong>Last Modified:</strong> ${new Date(contact.last_modified).toLocaleString()}</p>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('editContactBtn').onclick = () => editContactFromDetail(contactId);
+    
+    const modal = new bootstrap.Modal(document.getElementById('contactDetailModal'));
+    modal.show();
+}
+
+function editContactFromDetail(contactId) {
+    // Close detail modal and open edit modal
+    const detailModal = bootstrap.Modal.getInstance(document.getElementById('contactDetailModal'));
+    detailModal.hide();
+    
+    // Wait a moment then open edit modal
+    setTimeout(() => {
+        editContact(contactId);
+    }, 300);
+}
+
+// Duplicate Detection Functions
+function findDuplicates(contact) {
+    return allContacts.filter(c => 
+        c.id !== contact.id && 
+        (c.name.toLowerCase() === contact.name.toLowerCase() ||
+         (contact.phone_numbers && c.phone_numbers && 
+          contact.phone_numbers.some(p1 => 
+              c.phone_numbers.some(p2 => p1.number === p2.number)
+          )))
+    );
+}
+
+function showMergeDuplicates(contactId) {
+    const contact = allContacts.find(c => c.id === contactId);
+    const duplicates = findDuplicates(contact);
+    
+    if (duplicates.length === 0) {
+        alert('No duplicates found for this contact.');
+        return;
+    }
+    
+    const duplicatesList = [contact, ...duplicates];
+    let html = '<h6>Select contacts to merge:</h6>';
+    
+    duplicatesList.forEach((dup, index) => {
+        const isOriginal = dup.id === contactId;
+        html += `
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" value="${dup.id}" 
+                       ${isOriginal ? 'checked disabled' : ''} id="dup${index}">
+                <label class="form-check-label" for="dup${index}">
+                    <strong>${dup.name}</strong>
+                    ${dup.phone_numbers?.length ? ` - ${dup.phone_numbers[0].display}` : ''}
+                    ${isOriginal ? ' (Original)' : ''}
+                </label>
+            </div>
+        `;
+    });
+    
+    document.getElementById('duplicatesList').innerHTML = html;
+    
+    const modal = new bootstrap.Modal(document.getElementById('mergeDuplicatesModal'));
+    modal.show();
+}
+
+async function mergeSelectedDuplicates() {
+    const selectedIds = Array.from(document.querySelectorAll('#duplicatesList input:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedIds.length < 2) {
+        alert('Please select at least 2 contacts to merge.');
+        return;
+    }
+    
+    const contactsToMerge = allContacts.filter(c => selectedIds.includes(c.id));
+    const primaryContact = contactsToMerge[0];
+    
+    // Merge data
+    const mergedContact = {
+        ...primaryContact,
+        phone_numbers: [...new Set(contactsToMerge.flatMap(c => c.phone_numbers || []))],
+        emails: [...new Set(contactsToMerge.flatMap(c => c.emails || []))],
+        categories: [...new Set(contactsToMerge.flatMap(c => 
+            Array.isArray(c.categories) ? c.categories : [c.category || 'Uncategorized']
+        ))],
+        notes: contactsToMerge.map(c => c.notes).filter(n => n).join('\n\n'),
+        important: contactsToMerge.some(c => c.important),
+        last_modified: new Date().toISOString()
+    };
+    
+    try {
+        // Update primary contact
+        await db.collection('contacts').doc(primaryContact.id).update(mergedContact);
+        
+        // Delete other contacts
+        for (let i = 1; i < contactsToMerge.length; i++) {
+            await db.collection('contacts').doc(contactsToMerge[i].id).delete();
+        }
+        
+        await loadContacts();
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('mergeDuplicatesModal'));
+        modal.hide();
+        
+        alert('Contacts merged successfully!');
+    } catch (error) {
+        console.error('Error merging contacts:', error);
+        alert('Error merging contacts. Please try again.');
+    }
+}
+
+// Dashboard Filtering Functions
+function showFilteredContacts(filterType) {
+    showContacts();
+    
+    switch (filterType) {
+        case 'all':
+            document.getElementById('searchInput').value = '';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('importantFilter').checked = false;
+            document.getElementById('showArchived').checked = true;
+            break;
+        case 'important':
+            document.getElementById('importantFilter').checked = true;
+            document.getElementById('showArchived').checked = false;
+            break;
+        case 'active':
+            document.getElementById('importantFilter').checked = false;
+            document.getElementById('showArchived').checked = false;
+            break;
+        case 'categories':
+            // Show category selection
+            const category = prompt('Enter category name:');
+            if (category) {
+                document.getElementById('categoryFilter').value = category;
+            }
+            break;
+    }
+    
+    filterContacts();
+}
+
+// Multiple Categories Support
+function addCategoryField(selectElement) {
+    const categoriesContainer = document.getElementById('contactCategories');
+    const newRow = document.createElement('div');
+    newRow.className = 'input-group mb-2';
+    
+    const selectedValue = selectElement ? selectElement.value : '';
+    
+    newRow.innerHTML = `
+        <select class="form-select">
+            <option value="">Select category...</option>
+            ${allCategories.map(cat => `<option value="${cat}" ${cat === selectedValue ? 'selected' : ''}>${cat}</option>`).join('')}
+        </select>
+        <button type="button" class="btn btn-outline-danger" onclick="removeField(this)">
+            <i class="fas fa-minus"></i>
+        </button>
+    `;
+    
+    categoriesContainer.appendChild(newRow);
+}
+
+function getSelectedCategories() {
+    const categorySelects = document.querySelectorAll('#contactCategories select');
+    return Array.from(categorySelects)
+        .map(select => select.value)
+        .filter(value => value && value !== 'Uncategorized');
+}
+
+function updateCategoryFilters() {
+    const categorySelect = document.getElementById('categoryFilter');
+    const contactCategory = document.getElementById('contactCategory');
+    const editContactCategory = document.getElementById('editContactCategory');
+    
+    const options = ['<option value="">All Categories</option>'];
+    allCategories.forEach(category => {
+        options.push(`<option value="${category}">${category}</option>`);
+    });
+    
+    if (categorySelect) categorySelect.innerHTML = options.join('');
+    if (contactCategory) contactCategory.innerHTML = options.join('');
+    if (editContactCategory) editContactCategory.innerHTML = options.join('');
 } 
