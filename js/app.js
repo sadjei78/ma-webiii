@@ -5,10 +5,10 @@ let allCategories = ['Uncategorized', 'Family', 'Work', 'Friends', 'Healthcare',
 // Check authentication before loading app
 window.loadApp = function() {
     // Check if user is authenticated
-    if (!auth.currentUser) {
-        window.location.href = '/login.html';
-        return;
-    }
+            if (!auth.currentUser) {
+            window.location.href = 'login.html';
+            return;
+        }
     
     // Initialize the application
     loadContacts();
@@ -26,14 +26,14 @@ window.loadApp = function() {
 window.showLogin = function() {
     // If we're not already on the login page, redirect
     if (window.location.pathname !== '/login.html') {
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
     }
 };
 
 // Sign out function
 function signOut() {
     auth.signOut().then(() => {
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
     }).catch((error) => {
         console.error('Error signing out:', error);
     });
