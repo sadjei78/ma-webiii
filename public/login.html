@@ -115,9 +115,7 @@
     <script src="js/firebase-config.js"></script>
     
     <script>
-        // Make auth globally accessible
-        const auth = firebase.auth();
-        
+        // Use auth from firebase-config.js instead of declaring it again
         let isLoginForm = true;
         
         function toggleForm() {
@@ -147,7 +145,8 @@
             `;
         }
         
-        function signIn() {
+        // Make functions globally accessible
+        window.signIn = function() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
@@ -163,9 +162,9 @@
                 .catch((error) => {
                     showAlert(error.message);
                 });
-        }
+        };
         
-        function signUp() {
+        window.signUp = function() {
             const email = document.getElementById('signupEmail').value;
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
@@ -192,21 +191,21 @@
                 .catch((error) => {
                     showAlert(error.message);
                 });
-        }
+        };
         
-        function showLogin() {
+        window.showLogin = function() {
             // If we're not already on the login page, redirect
             if (window.location.pathname !== '/login.html') {
                 window.location.href = 'login.html';
             }
-        }
+        };
         
-        function loadApp() {
+        window.loadApp = function() {
             // Redirect to main app if user is authenticated
             if (window.location.pathname === '/login.html') {
                 window.location.href = './';
             }
-        }
+        };
     </script>
 </body>
 </html> 
