@@ -128,6 +128,18 @@
                 border: 1px solid blue !important;
                 background-color: rgba(0, 0, 255, 0.1) !important;
             }
+            
+            /* Force initial mobile visibility */
+            body {
+                overflow-x: hidden !important;
+            }
+            
+            /* Ensure app content is visible on mobile */
+            #appContent {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
         }
         .important-contact {
             border-left: 4px solid #ffc107;

@@ -1,5 +1,55 @@
+// Mobile initialization function
+function initializeMobileView() {
+    console.log('Initializing mobile view...');
+    
+    // Detect mobile immediately
+    detectMobileImmediately();
+    
+    // If mobile, force visibility
+    if (isMobileView) {
+        console.log('Mobile detected, forcing initial visibility');
+        
+        // Force app content visibility
+        const appContent = document.getElementById('appContent');
+        if (appContent) {
+            appContent.style.display = 'block';
+            appContent.style.visibility = 'visible';
+            appContent.style.opacity = '1';
+        }
+        
+        // Force dashboard visibility
+        const dashboardView = document.getElementById('dashboardView');
+        if (dashboardView) {
+            dashboardView.style.display = 'block';
+            dashboardView.style.visibility = 'visible';
+            dashboardView.style.opacity = '1';
+        }
+        
+        console.log('Mobile initialization complete');
+    }
+}
+
+// Call mobile initialization immediately
+initializeMobileView();
+
+// Also call on DOM ready
+document.addEventListener('DOMContentLoaded', initializeMobileView);
+
 // Mobile viewport change detection
 let isMobileView = false;
+
+// Immediate mobile detection on script load
+function detectMobileImmediately() {
+    isMobileView = window.innerWidth <= 768;
+    console.log('Immediate mobile detection:', {
+        viewportWidth: window.innerWidth,
+        isMobile: isMobileView,
+        userAgent: navigator.userAgent
+    });
+}
+
+// Call immediately when script loads
+detectMobileImmediately();
 
 function checkMobileView() {
     const wasMobile = isMobileView;
@@ -31,6 +81,7 @@ window.addEventListener('orientationchange', () => {
 // Check on page load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, checking mobile view');
+    detectMobileImmediately();
     checkMobileView();
 });
 
@@ -289,6 +340,8 @@ async function addCategory(categoryName) {
 // UI Functions
 function showDashboard() {
     try {
+        console.log('showDashboard called, mobile view:', isMobileView);
+        
         document.getElementById('dashboardView').style.display = 'block';
         document.getElementById('contactsView').style.display = 'none';
         
@@ -314,6 +367,13 @@ function showDashboard() {
         } else {
             // If structure exists, just update the data
             updateDashboard();
+        }
+        
+        // Force mobile visibility if needed
+        if (isMobileView) {
+            setTimeout(() => {
+                forceMobileDashboardVisibility();
+            }, 200);
         }
     } catch (error) {
         console.error('Error showing dashboard:', error);
