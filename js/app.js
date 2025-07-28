@@ -10,12 +10,11 @@ window.loadApp = async function() {
         return;
     }
     
-    // Check if user is authorized using Firebase Functions
+    // Check if user is authorized using Firestore
     try {
-        const checkAuthFunction = firebase.functions().httpsCallable('checkAuthorization');
-        const result = await checkAuthFunction();
+        const isAuthorized = await isUserAuthorized(auth.currentUser.email);
         
-        if (!result.data.authorized) {
+        if (!isAuthorized) {
             alert(SECURITY_CONFIG.accessDeniedMessage);
             auth.signOut().then(() => {
                 window.location.href = 'login.html';
@@ -1091,19 +1090,32 @@ function showManageUsersModal() {
 
 async function loadAuthorizedUsers() {
     try {
-        const listUsersFunction = firebase.functions().httpsCallable('listAuthorizedUsers');
-        const result = await listUsersFunction();
+        const snapshot = await db.collection('authorizedUsers')
+            .where('authorized', '==', true)
+            .get();
         
-        const users = result.data.authorizedUsers;
+        const users = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            users.push({
+                id: doc.id,
+                email: data.email,
+                addedBy: data.addedBy,
+                addedAt: data.addedAt
+            });
+        });
+        
         const container = document.getElementById('authorizedUsersList');
-        
         if (users.length === 0) {
             container.innerHTML = '<p class="text-muted">No authorized users found.</p>';
         } else {
-            container.innerHTML = users.map(email => `
+            container.innerHTML = users.map(user => `
                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>${email}</span>
-                    <button class="btn btn-sm btn-outline-danger" onclick="removeAuthorizedUser('${email}')" ${users.length === 1 ? 'disabled' : ''}>
+                    <div>
+                        <span>${user.email}</span>
+                        ${user.addedBy ? `<small class="text-muted d-block">Added by: ${user.addedBy}</small>` : ''}
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeAuthorizedUser('${user.id}', '${user.email}')" ${users.length === 1 ? 'disabled' : ''}>
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -1129,8 +1141,31 @@ async function addAuthorizedUser() {
     }
     
     try {
-        const addUserFunction = firebase.functions().httpsCallable('addAuthorizedUser');
-        const result = await addUserFunction({ email: email });
+        // Check if user already exists
+        const existingQuery = await db.collection('authorizedUsers')
+            .where('email', '==', email)
+            .where('authorized', '==', true)
+            .get();
+        
+        if (!existingQuery.empty) {
+            alert('This user is already authorized.');
+            return;
+        }
+        
+        // Get current user info
+        const currentUser = firebase.auth().currentUser;
+        if (!currentUser) {
+            alert('You must be signed in to add users.');
+            return;
+        }
+        
+        // Add new authorized user
+        await db.collection('authorizedUsers').add({
+            email: email,
+            authorized: true,
+            addedBy: currentUser.email,
+            addedAt: new Date().toISOString()
+        });
         
         // Clear input
         document.getElementById('newUserEmail').value = '';
@@ -1138,26 +1173,36 @@ async function addAuthorizedUser() {
         // Reload users
         await loadAuthorizedUsers();
         
-        alert(result.data.message);
+        alert(`User ${email} has been authorized successfully!`);
     } catch (error) {
         console.error('Error adding user:', error);
         alert('Error adding user: ' + (error.message || 'Unknown error'));
     }
 }
 
-async function removeAuthorizedUser(email) {
+async function removeAuthorizedUser(userId, email) {
     if (!confirm(`Are you sure you want to remove ${email} from authorized users?`)) {
         return;
     }
     
     try {
-        const removeUserFunction = firebase.functions().httpsCallable('removeAuthorizedUser');
-        const result = await removeUserFunction({ email: email });
+        // Check if this is the last authorized user
+        const allUsers = await db.collection('authorizedUsers')
+            .where('authorized', '==', true)
+            .get();
+        
+        if (allUsers.size <= 1) {
+            alert('Cannot remove the last authorized user.');
+            return;
+        }
+        
+        // Remove the user
+        await db.collection('authorizedUsers').doc(userId).delete();
         
         // Reload users
         await loadAuthorizedUsers();
         
-        alert(result.data.message);
+        alert(`User ${email} has been removed from authorized users.`);
     } catch (error) {
         console.error('Error removing user:', error);
         alert('Error removing user: ' + (error.message || 'Unknown error'));
