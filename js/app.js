@@ -14,6 +14,12 @@ function setInnerHTML(elementId, content) {
     }
 }
 
+// Help function
+function showHelpModal() {
+    const modal = new bootstrap.Modal(document.getElementById('helpModal'));
+    modal.show();
+}
+
 // Global functions for cross-file access
 window.loadApp = async function() {
     try {

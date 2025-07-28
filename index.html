@@ -92,6 +92,23 @@
                     </a>
                 </div>
                 <div class="navbar-nav">
+                    <div class="dropdown me-2">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-question-circle me-2"></i>Help
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="https://github.com/sadjei78/ma-webiii/blob/main/USER_GUIDE.md" target="_blank">
+                                <i class="fas fa-book me-2"></i>Full User Guide
+                            </a>
+                            <a class="dropdown-item" href="https://github.com/sadjei78/ma-webiii/blob/main/QUICK_REFERENCE.md" target="_blank">
+                                <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <span class="dropdown-item-text text-muted">
+                                <small>App URL: sadjei78.github.io/ma-webiii</small>
+                            </span>
+                        </div>
+                    </div>
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user me-2"></i><span id="userInfo">User</span>
@@ -189,6 +206,16 @@
                             <button class="btn btn-outline-secondary" onclick="showContacts()">
                                 <i class="fas fa-users me-2"></i>View All Contacts
                             </button>
+                            <div class="dropdown-divider my-3"></div>
+                            <h5><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+                            <div class="d-grid gap-2">
+                                <a href="https://github.com/sadjei78/ma-webiii/blob/main/USER_GUIDE.md" target="_blank" class="btn btn-outline-info">
+                                    <i class="fas fa-book me-2"></i>Full User Guide
+                                </a>
+                                <a href="https://github.com/sadjei78/ma-webiii/blob/main/QUICK_REFERENCE.md" target="_blank" class="btn btn-outline-info">
+                                    <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -207,6 +234,9 @@
                         </button>
                         <button class="btn btn-outline-primary" onclick="exportContacts()">
                             <i class="fas fa-download me-2"></i>Export
+                        </button>
+                        <button class="btn btn-outline-info ms-2" onclick="showHelpModal()">
+                            <i class="fas fa-question-circle me-2"></i>Help
                         </button>
                     </div>
                 </div>
@@ -496,6 +526,59 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-question-circle me-2"></i>Help & Documentation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                                    <h5 class="card-title">Full User Guide</h5>
+                                    <p class="card-text">Complete instructions for all features and advanced usage.</p>
+                                    <a href="https://github.com/sadjei78/ma-webiii/blob/main/USER_GUIDE.md" target="_blank" class="btn btn-primary">
+                                        <i class="fas fa-external-link-alt me-2"></i>Open Guide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-clipboard-list fa-3x text-info mb-3"></i>
+                                    <h5 class="card-title">Quick Reference</h5>
+                                    <p class="card-text">One-page summary of most common actions and shortcuts.</p>
+                                    <a href="https://github.com/sadjei78/ma-webiii/blob/main/QUICK_REFERENCE.md" target="_blank" class="btn btn-info">
+                                        <i class="fas fa-external-link-alt me-2"></i>Open Reference
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h6><i class="fas fa-info-circle me-2"></i>Quick Tips</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Click any dashboard card to see filtered contacts</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Use categories to organize your contacts</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Mark important contacts for quick access</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Export your data regularly as backup</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="text-muted">App URL: sadjei78.github.io/ma-webiii</span>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
