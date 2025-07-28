@@ -181,33 +181,52 @@ function showContacts() {
 }
 
 function updateDashboard() {
-    const total = allContacts.length;
-    const important = allContacts.filter(c => c.important).length;
-    const archived = allContacts.filter(c => c.archived).length;
-    const active = total - archived;
-    const categories = new Set(allContacts.map(c => c.category || 'Uncategorized')).size;
+    try {
+        const total = allContacts.length;
+        const important = allContacts.filter(c => c.important).length;
+        const archived = allContacts.filter(c => c.archived).length;
+        const active = total - archived;
+        const categories = new Set(allContacts.map(c => c.category || 'Uncategorized')).size;
 
-    document.getElementById('totalContacts').textContent = total;
-    document.getElementById('importantContacts').textContent = important;
-    document.getElementById('activeContacts').textContent = active;
-    document.getElementById('categoriesCount').textContent = categories;
+        // Update dashboard stats with error handling
+        const totalElement = document.getElementById('totalContacts');
+        const importantElement = document.getElementById('importantContacts');
+        const activeElement = document.getElementById('activeContacts');
+        const categoriesElement = document.getElementById('categoriesCount');
 
-    // Show recent contacts
-    const recentContacts = allContacts
-        .sort((a, b) => new Date(b.last_modified) - new Date(a.last_modified))
-        .slice(0, 5);
+        if (totalElement) totalElement.textContent = total;
+        if (importantElement) importantElement.textContent = important;
+        if (activeElement) activeElement.textContent = active;
+        if (categoriesElement) categoriesElement.textContent = categories;
 
-    const recentHtml = recentContacts.map(contact => `
-        <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-                <strong>${contact.name}</strong>
-                ${contact.organization ? `<br><small class="text-muted">${contact.organization}</small>` : ''}
+        // Show recent contacts
+        const recentContacts = allContacts
+            .sort((a, b) => new Date(b.last_modified || 0) - new Date(a.last_modified || 0))
+            .slice(0, 5);
+
+        const recentHtml = recentContacts.map(contact => `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${sanitizeInput(contact.name)}</strong>
+                    ${contact.organization ? `<br><small class="text-muted">${sanitizeInput(contact.organization)}</small>` : ''}
+                </div>
+                <span class="badge bg-primary rounded-pill">${sanitizeInput(contact.category || 'Uncategorized')}</span>
             </div>
-            <span class="badge bg-primary rounded-pill">${contact.category || 'Uncategorized'}</span>
-        </div>
-    `).join('');
+        `).join('');
 
-    document.getElementById('recentContacts').innerHTML = recentHtml || '<div class="list-group-item text-muted">No contacts yet</div>';
+        const recentElement = document.getElementById('recentContacts');
+        if (recentElement) {
+            recentElement.innerHTML = recentHtml || '<div class="list-group-item text-muted">No contacts yet</div>';
+        }
+    } catch (error) {
+        console.error('Error updating dashboard:', error);
+        // Fallback to show basic info
+        const elements = ['totalContacts', 'importantContacts', 'activeContacts', 'categoriesCount'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = '0';
+        });
+    }
 }
 
 function renderContacts() {
@@ -917,10 +936,13 @@ function showFilteredContacts(filterType) {
             document.getElementById('showArchived').checked = false;
             break;
         case 'categories':
-            // Show category selection
-            const category = prompt('Enter category name:');
-            if (category) {
-                document.getElementById('categoryFilter').value = category;
+            // Show category selection - mobile-friendly approach
+            const category = prompt('Enter category name (or press Cancel to see all):');
+            if (category && category.trim()) {
+                document.getElementById('categoryFilter').value = category.trim();
+            } else if (category === null) {
+                // User cancelled, show all contacts
+                document.getElementById('categoryFilter').value = '';
             }
             break;
     }
@@ -968,15 +990,12 @@ function updateCategoryFilters() {
     
     if (categorySelect) {
         categorySelect.innerHTML = options.join('');
-        console.log('Updated category filter dropdown'); // Debug log
     }
     if (contactCategory) {
         contactCategory.innerHTML = options.join('');
-        console.log('Updated contact category dropdown'); // Debug log
     }
     if (editContactCategory) {
         editContactCategory.innerHTML = options.join('');
-        console.log('Updated edit contact category dropdown'); // Debug log
     }
 } 
 

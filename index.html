@@ -29,10 +29,33 @@
         }
         .clickable-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
         }
         .clickable-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+            .clickable-card {
+                min-height: 120px;
+                display: flex;
+                align-items: center;
+            }
+            .clickable-card .card-body {
+                padding: 1rem 0.75rem;
+            }
+            .clickable-card h6 {
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+            }
+            .clickable-card h4 {
+                font-size: 1.5rem;
+                margin-bottom: 0;
+            }
+            .clickable-card i {
+                font-size: 1.5rem !important;
+            }
         }
         .important-contact {
             border-left: 4px solid #ffc107;
@@ -143,46 +166,46 @@
                 </div>
                 
                 <div class="row mb-4">
-                    <div class="col-md-3 mb-3">
+                    <div class="col-6 col-md-3 mb-3">
                         <div class="card text-center clickable-card" onclick="showFilteredContacts('all')">
                             <div class="card-body">
                                 <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                                <h5 class="card-title">Total Contacts</h5>
-                                <h3 class="text-primary" id="totalContacts">0</h3>
+                                <h6 class="card-title">Total Contacts</h6>
+                                <h4 class="text-primary" id="totalContacts">0</h4>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-6 col-md-3 mb-3">
                         <div class="card text-center clickable-card" onclick="showFilteredContacts('important')">
                             <div class="card-body">
                                 <i class="fas fa-star fa-2x text-warning mb-2"></i>
-                                <h5 class="card-title">Important</h5>
-                                <h3 class="text-warning" id="importantContacts">0</h3>
+                                <h6 class="card-title">Important</h6>
+                                <h4 class="text-warning" id="importantContacts">0</h4>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-6 col-md-3 mb-3">
                         <div class="card text-center clickable-card" onclick="showFilteredContacts('active')">
                             <div class="card-body">
                                 <i class="fas fa-user-check fa-2x text-success mb-2"></i>
-                                <h5 class="card-title">Active</h5>
-                                <h3 class="text-success" id="activeContacts">0</h3>
+                                <h6 class="card-title">Active</h6>
+                                <h4 class="text-success" id="activeContacts">0</h4>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="col-6 col-md-3 mb-3">
                         <div class="card text-center clickable-card" onclick="showFilteredContacts('categories')">
                             <div class="card-body">
                                 <i class="fas fa-tags fa-2x text-info mb-2"></i>
-                                <h5 class="card-title">Categories</h5>
-                                <h3 class="text-info" id="categoriesCount">0</h3>
+                                <h6 class="card-title">Categories</h6>
+                                <h4 class="text-info" id="categoriesCount">0</h4>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6 mb-3">
                         <div class="card">
                             <div class="card-header">
                                 <h5><i class="fas fa-clock me-2"></i>Recent Contacts</h5>
@@ -194,27 +217,33 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <h4>Quick Actions</h4>
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary" onclick="showAddContactModal()">
-                                <i class="fas fa-plus me-2"></i>Add New Contact
-                            </button>
-                            <button class="btn btn-outline-primary" onclick="exportContacts()">
-                                <i class="fas fa-download me-2"></i>Export Contacts
-                            </button>
-                            <button class="btn btn-outline-secondary" onclick="showContacts()">
-                                <i class="fas fa-users me-2"></i>View All Contacts
-                            </button>
-                            <div class="dropdown-divider my-3"></div>
-                            <h5><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
-                            <div class="d-grid gap-2">
-                                <a href="user-guide.html" target="_blank" class="btn btn-outline-info">
-                                    <i class="fas fa-book me-2"></i>Full User Guide
-                                </a>
-                                <a href="quick-reference.html" target="_blank" class="btn btn-outline-info">
-                                    <i class="fas fa-clipboard-list me-2"></i>Quick Reference
-                                </a>
+                    <div class="col-12 col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" onclick="showAddContactModal()">
+                                        <i class="fas fa-plus me-2"></i>Add New Contact
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="exportContacts()">
+                                        <i class="fas fa-download me-2"></i>Export Contacts
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="showContacts()">
+                                        <i class="fas fa-users me-2"></i>View All Contacts
+                                    </button>
+                                    <div class="dropdown-divider my-3"></div>
+                                    <h6><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                                    <div class="d-grid gap-2">
+                                        <a href="user-guide.html" target="_blank" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-book me-2"></i>Full User Guide
+                                        </a>
+                                        <a href="quick-reference.html" target="_blank" class="btn btn-outline-info btn-sm">
+                                            <i class="fas fa-clipboard-list me-2"></i>Quick Reference
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
